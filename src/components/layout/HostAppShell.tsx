@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { BookOpen, BarChart3, CalendarClock, Compass, LogOut } from 'lucide-react';
 import { ErootLogo } from '@/components/eroot/ErootLogo';
+import { LanguageSwitcher } from '@/components/eroot/LanguageSwitcher';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/features/auth/useAuth';
 import { useTranslation } from '@/i18n/useTranslation';
@@ -87,6 +88,7 @@ export function HostAppShell({ children }: { children?: ReactNode }) {
           </div>
 
           <div className="flex items-center gap-3">
+            <LanguageSwitcher />
             {user?.email && (
               <span className="hidden text-sm text-slate-600 sm:inline">{user.email}</span>
             )}

@@ -71,13 +71,16 @@
 | `size_bytes` | `integer` | `NOT NULL` | Validated `<= 5242880` |
 | `created_at` | `timestamptz` | `NOT NULL DEFAULT now()` | |
 
-## 3. U4 Live Game Tables (Added in U4)
+## 3. Live Game, Library, Team & Challenge Migrations (`0002`–`0004`)
 
-- `games`: `id`, `pin` (unique 7-digit string), `host_id`, `quiz_id`, `mode`, `state`, `current_slide_index`, `question_started_at`, `settings`, `max_players` (default 100), `public_slides` (sanitized slide array without answers), `created_at`, `started_at`, `ended_at`.
-- `game_snapshots`: `game_id` PK, `host_id`, `authoritative_slides` JSONB (never exposed to `anon`).
-- `players`: `id`, `game_id`, `nickname`, `identifier`, `session_token` (hashed or opaque UUID), `team_id`, `total_score`, `streak`, `is_kicked`, `connected_at`, `last_seen_at`.
-- `answers`: `id`, `game_id`, `player_id`, `slide_id`, `payload` JSONB, `response_ms`, `points`, `is_correct`, `submitted_at` (`UNIQUE (game_id, player_id, slide_id)`).
-- `reports`: `id`, `game_id`, `host_id`, `title`, `mode`, `summary_cache` JSONB, `created_at`.
+- `games` (`0002`, `0004`): `id`, `pin` (unique 7-digit string), `host_id`, `quiz_id`, `mode` (`'classic' | 'team' | 'challenge'`), `state`, `current_slide_index`, `question_started_at`, `settings`, `max_players` (default 100), `public_slides` (sanitized slide array without answers), `reveal_payload`, `challenge_deadline`, `challenge_timer_enabled`, `challenge_accuracy_only`, `created_at`, `started_at`, `ended_at`.
+- `game_snapshots` (`0002`): `game_id` PK, `host_id`, `authoritative_slides` JSONB (never exposed to `anon`).
+- `players` (`0002`, `0004`): `id`, `game_id`, `nickname`, `identifier`, `session_token`, `team_id` (`REFERENCES teams(id)`), `total_score`, `streak`, `is_kicked`, `connected_at`, `last_seen_at`.
+- `answers` (`0002`): `id`, `game_id`, `player_id`, `slide_id`, `payload` JSONB (including `pin`, `ideas`, `votedIdeaIds`), `response_ms`, `points`, `is_correct`, `submitted_at` (`UNIQUE (game_id, player_id, slide_id)`).
+- `reports` (`0002`): `id`, `game_id`, `host_id`, `title`, `mode`, `summary_cache` JSONB, `created_at`.
+- `rate_limits` (`0002`): sliding-window IP/user buckets checked by Vercel Functions (`enforceRateLimit`).
+- `folders` & `quizzes.is_favourite` (`0003`): Library folder organization, starred quizzes, and `get_shared_quiz(p_quiz_id)` RPC for link-shared visibility.
+- `teams` (`0004`): `id`, `game_id`, `name`, `color_hex`, `position` (2–5 teams for Team Mode).
 
 ## 4. Row Level Security (RLS) Rules
 

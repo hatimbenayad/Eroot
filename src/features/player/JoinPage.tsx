@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { Dices } from 'lucide-react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { ErootLogo } from '@/components/eroot/ErootLogo';
+import { LanguageSwitcher } from '@/components/eroot/LanguageSwitcher';
 import { HostStageShell } from '@/components/eroot/HostStageShell';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -109,13 +110,16 @@ export function JoinPage() {
 
   return (
     <HostStageShell className="flex flex-col justify-between px-4 py-8">
-      <header className="mx-auto flex w-full max-w-md items-center justify-between">
+      <header className="mx-auto flex w-full max-w-md items-center justify-between gap-2">
         <Link to="/" aria-label="Eroot home">
           <ErootLogo variant="dark" size="md" />
         </Link>
-        <Link to="/auth" className="text-sm font-medium text-indigo-200 hover:text-white">
-          {t('nav.hostSignIn')}
-        </Link>
+        <div className="flex items-center gap-2">
+          <LanguageSwitcher tone="dark" />
+          <Link to="/auth" className="text-sm font-medium text-indigo-200 hover:text-white">
+            {t('nav.hostSignIn')}
+          </Link>
+        </div>
       </header>
 
       <main className="mx-auto my-8 w-full max-w-md space-y-4">

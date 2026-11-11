@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { ErootLogo } from '@/components/eroot/ErootLogo';
+import { LanguageSwitcher } from '@/components/eroot/LanguageSwitcher';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -81,12 +82,15 @@ export function AuthPage() {
           <Link to="/" aria-label="Eroot home">
             <ErootLogo size="md" />
           </Link>
-          <Link
-            to="/join"
-            className="text-sm font-medium text-indigo-600 hover:text-indigo-700 underline-offset-4 hover:underline"
-          >
-            {t('nav.joinGame')}
-          </Link>
+          <div className="flex items-center gap-3">
+            <LanguageSwitcher />
+            <Link
+              to="/join"
+              className="text-sm font-medium text-indigo-600 hover:text-indigo-700 underline-offset-4 hover:underline"
+            >
+              {t('nav.joinGame')}
+            </Link>
+          </div>
         </div>
 
         {!isConfigured && (

@@ -18,7 +18,9 @@ export const en = {
   },
   nav: {
     library: 'My Library',
+    discover: 'Discover',
     reports: 'Reports',
+    challenges: 'Challenges',
     joinGame: 'Join a game',
     hostSignIn: 'Host sign in',
   },
@@ -147,4 +149,8 @@ export const en = {
   },
 } as const;
 
-export type TranslationDictionary = typeof en;
+export type DeepWidenStrings<T> = T extends string
+  ? string
+  : { [K in keyof T]: DeepWidenStrings<T[K]> };
+
+export type TranslationDictionary = DeepWidenStrings<typeof en>;

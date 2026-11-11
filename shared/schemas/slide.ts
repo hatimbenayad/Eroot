@@ -443,7 +443,7 @@ export const quizSettingsSchema = z.object({
   description: z.string().trim().max(500, 'Description must be 500 characters or fewer.'),
   visibility: z.enum(['private', 'link', 'public']),
   coverImageUrl: z.string().url().nullable().optional(),
-  language: z.enum(['en']),
+  language: z.enum(['en', 'es']),
   musicPreset: z.enum(MUSIC_PRESETS),
 });
 

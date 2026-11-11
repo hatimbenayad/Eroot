@@ -11,8 +11,12 @@
 | **Host Live Stage** | `/host/:gameId` | Protected | Deep indigo/slate stage (`#0f172a` -> `#1e1b4b`), large projector typography | Desktop / Projector (`1024px+`) |
 | **Player Join** | `/join` | Anonymous | Bold high-contrast mobile-first PIN -> Identifier -> Nickname flow | Mobile (`360px+`) |
 | **Player Live** | `/play/:gameId` | Anonymous token | Full-viewport geometric answer tiles (Red Triangle, Blue Diamond, Yellow Circle, Green Square) | Mobile (`360px+`) |
-| **Reports** | `/reports`, `/reports/:id` | Protected | Clean light analytics workspace (R2) | Desktop / Tablet |
+| **Reports** | `/reports`, `/reports/:reportId` | Protected | Clean light analytics workspace, lazy-loaded `exceljs` XLSX export | Desktop / Tablet |
+| **Challenges** | `/challenges` | Protected | Host management of active & closed self-paced challenges (R3) | Desktop / Tablet |
+| **Challenge Play** | `/challenge/:pin` | Anonymous token | Async slide-by-slide flow with optional countdown & accuracy-only scoring (R3) | Mobile (`360px+`) |
 | **Discover** | `/discover` | Public/Host | Clean light search catalog (R2) | Responsive |
+
+*(Heavy host/studio routes are lazy-loaded via `React.lazy` in `src/app/App.tsx`; an EN/ES `<LanguageSwitcher />` is available across entry, auth, join, and host shells.)*
 
 ## 2. U1 Core Flows
 

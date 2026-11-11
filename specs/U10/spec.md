@@ -27,3 +27,4 @@
 ### 1.4 100-Player Load Sanity Benchmark & Operations Docs (`#63`)
 - Implement `scripts/load-sanity.ts` (executable via `npm run load:sanity`) benchmarking 100 concurrent simulated players x 10 slides (single/multi Quiz, Slider, Pin Answer, Brainstorm, Team Mode standings), reporting p50/p95/p99 latency and payload sizing.
 - Document findings in `docs/load-test-results.md`, sync `docs/design/*.md` with R2/R3 implementations, and deliver `README.md`, `CONTRIBUTING.md`, and `docs/retrospective.md`.
+

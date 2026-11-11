@@ -7,10 +7,10 @@ export function useTranslation(): I18nContextValue {
   if (!ctx) {
     return {
       locale: 'en',
+      setLocale: () => {},
       dict: en,
       t: (path, vars) => resolveTranslation(en as unknown as Record<string, unknown>, path, vars),
     };
   }
   return ctx;
 }
-

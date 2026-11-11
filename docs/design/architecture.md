@@ -42,18 +42,21 @@
 
 ```
 Eroot/
-  api/                  Vercel Serverless Functions (/api/health, /api/games/*)
+  api/                  Vercel Serverless Functions (10 routes: /api/health, /api/games/*, /api/challenges/*)
   docs/
     adr/                Architecture Decision Records
     design/             System design docs (this folder)
     inception/          Requirements, user stories, units, risks, backlog
-  shared/               Pure TS schemas, scoring, state machine, i18n, moderation
+    load-test-results.md  100-player load sanity & bundle optimization results
+    retrospective.md    Delivery retrospective
+  scripts/              100-player load sanity benchmark (load-sanity.ts / run-load-sanity.mjs)
+  shared/               Pure TS schemas, scoring, state machine, i18n, moderation, reports, import
   specs/                SDD per-unit specifications (U1..U10)
   src/
-    app/                Router, providers, layout shells
-    components/         Reusable UI primitives (Radix/shadcn + Eroot geometric tiles)
-    features/           Domain slices: auth, creator, library, host, player, reports, discover
-    i18n/               Typed translation dictionaries (en in R1, es in R3)
+    app/                Router (React.lazy code splitting), providers, layout shells
+    components/         Reusable UI primitives (Radix/shadcn + Eroot geometric tiles + LanguageSwitcher)
+    features/           Domain slices: auth, creator, library, host, player, challenges, reports, discover
+    i18n/               Typed translation dictionaries (en & es with parity test)
     lib/                Supabase client, API client, Web Audio synthesizer, utilities
     styles/             Tailwind & CSS design tokens
   supabase/

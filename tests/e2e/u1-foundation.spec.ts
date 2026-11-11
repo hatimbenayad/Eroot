@@ -1,7 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 
-test.describe('U1 Foundation, Auth & Accessibility', () => {
+test.describe('U1/U10 Foundation, i18n, Mobile Accessibility & Reduced Motion', () => {
   test('landing renders Eroot geometric preview and redirects protected /library to /auth', async ({
     page,
   }) => {
@@ -9,6 +9,13 @@ test.describe('U1 Foundation, Auth & Accessibility', () => {
     await expect(page.getByRole('heading', { name: /Host live quizzes/i })).toBeVisible();
     await expect(page.getByTestId('answer-tile-A')).toHaveAttribute('data-shape', 'triangle');
     await expect(page.getByTestId('answer-tile-C')).toHaveAttribute('data-shape', 'circle');
+
+    // Language switcher translates UI to Spanish cleanly and updates <html lang>
+    await page.getByRole('button', { name: 'ES', exact: true }).click();
+    await expect(page.locator('html')).toHaveAttribute('lang', 'es');
+    await expect(page.getByRole('heading', { name: /Dirige cuestionarios en vivo/i })).toBeVisible();
+    await page.getByRole('button', { name: 'EN', exact: true }).click();
+    await expect(page.locator('html')).toHaveAttribute('lang', 'en');
 
     // Protected route guard
     await page.goto('/library');
@@ -43,5 +50,33 @@ test.describe('U1 Foundation, Auth & Accessibility', () => {
       expect(severe, `Axe violations on ${path}`).toEqual([]);
     }
   });
-});
 
+  test('mobile /join renders cleanly under reduced motion with zero console errors or axe issues', async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({
+      viewport: { width: 390, height: 844 },
+      reducedMotion: 'reduce',
+    });
+    const page = await context.newPage();
+    const consoleErrors: string[] = [];
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') consoleErrors.push(msg.text());
+    });
+    page.on('pageerror', (err) => consoleErrors.push(err.message));
+
+    await page.goto('/join');
+    await expect(page.getByLabel('Game PIN')).toBeVisible();
+    await page.getByRole('button', { name: 'ES', exact: true }).click();
+    await expect(page.getByRole('heading', { name: /Únete a una partida/i })).toBeVisible();
+
+    const results = await new AxeBuilder({ page }).analyze();
+    const severe = results.violations.filter(
+      (v) => v.impact === 'critical' || v.impact === 'serious'
+    );
+    expect(severe).toEqual([]);
+    expect(consoleErrors).toEqual([]);
+
+    await context.close();
+  });
+});

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, Gamepad2, Layers, ShieldCheck } from 'lucide-react';
 import { AnswerTile } from '@/components/eroot/AnswerTile';
 import { ErootLogo } from '@/components/eroot/ErootLogo';
+import { LanguageSwitcher } from '@/components/eroot/LanguageSwitcher';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -29,7 +30,8 @@ export function LandingPage() {
           <Link to="/" aria-label="Eroot home">
             <ErootLogo size="md" />
           </Link>
-          <nav aria-label="Top actions" className="flex items-center gap-3">
+          <nav aria-label="Top actions" className="flex items-center gap-2 sm:gap-3">
+            <LanguageSwitcher />
             <Button asChild variant="outline" size="sm">
               <Link to="/join">{t('nav.joinGame')}</Link>
             </Button>

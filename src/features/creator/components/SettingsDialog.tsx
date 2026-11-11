@@ -56,7 +56,7 @@ export function SettingsDialog({
       description: quiz.description,
       visibility: quiz.visibility,
       coverImageUrl: quiz.coverImageUrl,
-      language: 'en',
+      language: quiz.language === 'es' ? 'es' : 'en',
       musicPreset: quiz.musicPreset,
     },
   });
@@ -68,7 +68,7 @@ export function SettingsDialog({
         description: quiz.description,
         visibility: quiz.visibility,
         coverImageUrl: quiz.coverImageUrl,
-        language: 'en',
+        language: quiz.language === 'es' ? 'es' : 'en',
         musicPreset: quiz.musicPreset,
       });
       setCoverUrl(quiz.coverImageUrl);
@@ -153,6 +153,17 @@ export function SettingsDialog({
                     {MUSIC_LABELS[preset]}
                   </option>
                 ))}
+              </select>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="settings-language">{t('creator.settingsModal.language')}</Label>
+              <select
+                id="settings-language"
+                {...form.register('language')}
+                className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm"
+              >
+                <option value="en">English</option>
+                <option value="es">Español</option>
               </select>
             </div>
           </div>

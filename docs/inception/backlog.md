@@ -103,12 +103,12 @@
   - [x] **Task #56:** `feat(u9): implement Pin answer (normalized region target editor, tap submission, server geometry check)`
   - [x] **Task #57:** `feat(u9): implement Drop pin (opinion heatmap/cluster) and Brainstorm (submit + upvote two-phase flow)`
 
-#### Epic #58 — `[U10] Safety, Accessibility, Spanish i18n, Performance & Ops` (`type:epic`, `unit:U10`, `priority:p0`)
-- **Story #59:** `As a user and operator, Eroot passes rate-limiting, WCAG AA, Spanish i18n, Lighthouse mobile budgets, and 100-player load testing` (`US-014`, `unit:U10`, `area:infra`)
-  - **Task #60:** `feat(u10): complete Spanish (es) translation dictionary and language switcher`
-  - **Task #61:** `feat(u10): harden profanity moderation, PIN brute-force protection, and API rate limiting`
-  - **Task #62:** `test(u10): run Playwright axe accessibility pass, reduced-motion verification, and Lighthouse /join mobile optimization`
-  - **Task #63:** `docs(u10): run ~100-player load sanity test, record results, and write README.md, CONTRIBUTING.md, and docs/retrospective.md`
+#### Epic #58 — `[U10] Safety, Accessibility, Spanish i18n, Performance & Ops` (`type:epic`, `unit:U10`, `priority:p0`) — **DONE**
+- [x] **Story #59:** `As a user and operator, Eroot passes rate-limiting, WCAG AA, Spanish i18n, Lighthouse mobile budgets, and 100-player load testing` (`US-014`, `unit:U10`, `area:infra`)
+  - [x] **Task #60:** `feat(u10): complete Spanish (es) translation dictionary and language switcher`
+  - [x] **Task #61:** `feat(u10): harden profanity moderation, PIN brute-force protection, and API rate limiting`
+  - [x] **Task #62:** `test(u10): run Playwright axe accessibility pass, reduced-motion verification, and Lighthouse /join mobile optimization`
+  - [x] **Task #63:** `docs(u10): run ~100-player load sanity test, record results, and write README.md, CONTRIBUTING.md, and docs/retrospective.md`
 
 ---
 

@@ -19,7 +19,7 @@ import {
   type DbGameRow,
   type DbTeamRow,
 } from '../_lib/game-helpers';
-import { getAdminClient, requireHostUser, sendError } from '../_lib/supabase-admin';
+import { enforceRateLimit, getAdminClient, requireHostUser, sendError } from '../_lib/supabase-admin';
 
 function mapDbSlide(row: SlideRow): SlideDraft {
   return {
@@ -54,6 +54,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
   const user = await requireHostUser(req, supabase);
   if (!user) {
     sendError(res, 401, 'UNAUTHORIZED', 'Host authentication required.');
+    return;
+  }
+
+  const allowed = await enforceRateLimit(supabase, `host_create:${user.id}`, 20, 60);
+  if (!allowed) {
+    sendError(res, 429, 'RATE_LIMITED', 'Too many games launched. Please wait a minute.');
     return;
   }
 
