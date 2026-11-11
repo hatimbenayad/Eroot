@@ -1,5 +1,5 @@
 import type { GameState } from '../schemas/game';
-import type { SlideType } from '../schemas/slide';
+import { isMediaSlideType, isScoredSlideType, type SlideType } from '../schemas/slide';
 
 export type GameAction = 'start' | 'begin_question' | 'reveal' | 'next' | 'end';
 
@@ -35,6 +35,7 @@ export function transitionGameState(
 
   const currentSlide = slides[currentSlideIndex];
   const hasNextSlide = currentSlideIndex + 1 < slides.length;
+  const isMedia = currentSlide ? isMediaSlideType(currentSlide.type) : false;
 
   switch (currentState) {
     case 'lobby': {
@@ -46,7 +47,7 @@ export function transitionGameState(
 
     case 'question_intro': {
       if (action === 'begin_question' || action === 'next') {
-        if (currentSlide?.type === 'classic' && action === 'next') {
+        if (isMedia && action === 'next') {
           return hasNextSlide
             ? { state: 'question_intro', slideIndex: currentSlideIndex + 1 }
             : { state: 'podium', slideIndex: currentSlideIndex };
@@ -58,7 +59,7 @@ export function transitionGameState(
 
     case 'question_active': {
       if (action === 'reveal' || action === 'next') {
-        if (currentSlide?.type === 'classic') {
+        if (isMedia) {
           return hasNextSlide
             ? { state: 'question_intro', slideIndex: currentSlideIndex + 1 }
             : { state: 'podium', slideIndex: currentSlideIndex };
@@ -72,7 +73,7 @@ export function transitionGameState(
       if (action !== 'next') {
         throw new InvalidGameTransitionError(`Action ${action} is not valid in question_reveal.`);
       }
-      const isScored = currentSlide?.type === 'quiz' || currentSlide?.type === 'true_false';
+      const isScored = currentSlide ? isScoredSlideType(currentSlide.type) : false;
       if (isScored && hasNextSlide) {
         return { state: 'scoreboard', slideIndex: currentSlideIndex };
       }
@@ -98,4 +99,3 @@ export function transitionGameState(
     }
   }
 }
-

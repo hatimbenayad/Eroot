@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { submitAnswerRequestSchema } from '../../shared/schemas/game';
 import type { SlideDraft } from '../../shared/schemas/slide';
-import { evaluateR1SlideAnswer } from '../../shared/scoring/scoring';
+import { evaluateSlideAnswer } from '../../shared/scoring/scoring';
 import type { DbGameRow, DbPlayerRow } from '../_lib/game-helpers';
 import {
   broadcastGameEvent,
@@ -41,7 +41,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     return;
   }
 
-  const { gameId, slideId, optionId } = parsed.data;
+  const { gameId, slideId, optionId, optionIds, text, value, order } = parsed.data;
+  const submission = { optionId, optionIds, text, value, order };
 
   const { data: playerData } = await supabase
     .from('players')
@@ -101,9 +102,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     return;
   }
 
-  const evaluation = evaluateR1SlideAnswer(activeSlide, optionId, rawResponseMs);
+  const evaluation = evaluateSlideAnswer(activeSlide, submission, rawResponseMs);
   if (!evaluation.validOption) {
-    sendError(res, 400, 'INVALID_OPTION', 'Selected option does not exist on this slide.');
+    sendError(res, 400, 'INVALID_OPTION', 'Submitted answer does not match this slide.');
     return;
   }
 
@@ -111,7 +112,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     game_id: gameId,
     player_id: player.id,
     slide_id: slideId,
-    payload: { optionId },
+    payload: submission,
     response_ms: Math.min(rawResponseMs, questionMs),
     points: evaluation.points,
     is_correct: evaluation.isCorrect,

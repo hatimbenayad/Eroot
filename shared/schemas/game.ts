@@ -41,11 +41,30 @@ export const joinGameRequestSchema = z.object({
   identifier: z.string().trim().max(80).optional(),
 });
 
-export const submitAnswerRequestSchema = z.object({
-  gameId: z.string().uuid(),
-  slideId: z.string().min(1),
-  optionId: z.string().min(1),
-});
+export const submitAnswerRequestSchema = z
+  .object({
+    gameId: z.string().uuid(),
+    slideId: z.string().min(1),
+    optionId: z.string().min(1).optional(),
+    optionIds: z.array(z.string().min(1)).min(1).max(6).optional(),
+    text: z.string().trim().min(1).max(250).optional(),
+    value: z.number().finite().optional(),
+    order: z.array(z.string().min(1)).length(4).optional(),
+  })
+  .refine(
+    (v) =>
+      v.optionId !== undefined ||
+      v.optionIds !== undefined ||
+      v.text !== undefined ||
+      v.value !== undefined ||
+      v.order !== undefined,
+    { message: 'Answer payload cannot be empty.' }
+  );
+
+export type AnswerSubmissionPayload = Pick<
+  z.infer<typeof submitAnswerRequestSchema>,
+  'optionId' | 'optionIds' | 'text' | 'value' | 'order'
+>;
 
 export const hostStateActionSchema = z.object({
   gameId: z.string().uuid(),
@@ -70,6 +89,15 @@ export interface RevealPayload {
   correctOptionIds: string[];
   optionCounts: Record<string, number>;
   totalAnswers: number;
+  acceptedAnswers?: string[];
+  sliderTarget?: { correctValue: number; tolerance: number; unit: string };
+  sliderValues?: number[];
+  puzzleSequence?: { id: string; text: string }[];
+  numericCounts?: Record<string, number>;
+  scaleMean?: number | null;
+  npsScore?: number | null;
+  wordCounts?: { word: string; count: number }[];
+  openResponses?: { nickname?: string; text: string }[];
 }
 
 export interface LobbyPlayerSummary {
@@ -105,4 +133,3 @@ export interface PublicGameSnapshot {
   podium: ScoreboardEntry[];
   answerCount: number;
 }
-

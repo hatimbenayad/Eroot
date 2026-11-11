@@ -1,6 +1,13 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { hostStateActionSchema, type RevealPayload } from '../../shared/schemas/game';
-import type { QuizContent, SlideDraft } from '../../shared/schemas/slide';
+import { hostStateActionSchema, type AnswerSubmissionPayload, type RevealPayload } from '../../shared/schemas/game';
+import type {
+  PuzzleContent,
+  QuizContent,
+  SlideDraft,
+  SliderContent,
+  TypeAnswerContent,
+} from '../../shared/schemas/slide';
+import { calculateNpsScore } from '../../shared/scoring/scoring';
 import {
   InvalidGameTransitionError,
   transitionGameState,
@@ -101,15 +108,49 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     if (authSlide) {
       const { data: slideAnswers } = await supabase
         .from('answers')
-        .select('payload')
+        .select('player_id, payload')
         .eq('game_id', gameId)
         .eq('slide_id', authSlide.id);
 
+      const { data: rosterRows } = await supabase
+        .from('players')
+        .select('id, nickname')
+        .eq('game_id', gameId);
+      const nicknameById = new Map(
+        (rosterRows ?? []).map((p) => [(p as { id: string }).id, (p as { nickname: string }).nickname])
+      );
+
       const optionCounts: Record<string, number> = {};
+      const numericCounts: Record<string, number> = {};
+      const numericValues: number[] = [];
+      const wordMap = new Map<string, number>();
+      const openResponses: { nickname?: string; text: string }[] = [];
+
       for (const ans of slideAnswers ?? []) {
-        const optionId = (ans as { payload?: { optionId?: string } }).payload?.optionId;
-        if (optionId) {
-          optionCounts[optionId] = (optionCounts[optionId] ?? 0) + 1;
+        const row = ans as { player_id: string; payload?: AnswerSubmissionPayload };
+        const p = row.payload ?? {};
+
+        if (p.optionId) {
+          optionCounts[p.optionId] = (optionCounts[p.optionId] ?? 0) + 1;
+        }
+        if (Array.isArray(p.optionIds)) {
+          for (const oid of p.optionIds) {
+            optionCounts[oid] = (optionCounts[oid] ?? 0) + 1;
+          }
+        }
+        if (typeof p.value === 'number' && Number.isFinite(p.value)) {
+          numericValues.push(p.value);
+          const key = String(p.value);
+          numericCounts[key] = (numericCounts[key] ?? 0) + 1;
+        }
+        if (typeof p.text === 'string' && p.text.trim()) {
+          const trimmed = p.text.trim();
+          const norm = trimmed.toLowerCase();
+          wordMap.set(norm, (wordMap.get(norm) ?? 0) + 1);
+          openResponses.push({
+            nickname: nicknameById.get(row.player_id),
+            text: trimmed,
+          });
         }
       }
 
@@ -120,11 +161,46 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
               .map((o) => o.id)
           : [];
 
+      const mean =
+        numericValues.length > 0
+          ? Number(
+              (numericValues.reduce((sum, n) => sum + n, 0) / numericValues.length).toFixed(2)
+            )
+          : null;
+
+      const wordCounts = Array.from(wordMap.entries())
+        .map(([word, count]) => ({ word, count }))
+        .sort((a, b) => b.count - a.count);
+
       const revealPayload: RevealPayload = {
         slideId: authSlide.id,
         correctOptionIds,
         optionCounts,
         totalAnswers: (slideAnswers ?? []).length,
+        acceptedAnswers:
+          authSlide.type === 'type_answer'
+            ? (authSlide.content as TypeAnswerContent).acceptedAnswers.filter((a) => a.trim())
+            : undefined,
+        sliderTarget:
+          authSlide.type === 'slider'
+            ? {
+                correctValue: (authSlide.content as SliderContent).correctValue,
+                tolerance: (authSlide.content as SliderContent).tolerance,
+                unit: (authSlide.content as SliderContent).unit,
+              }
+            : undefined,
+        sliderValues: authSlide.type === 'slider' ? numericValues : undefined,
+        puzzleSequence:
+          authSlide.type === 'puzzle' ? (authSlide.content as PuzzleContent).items : undefined,
+        numericCounts:
+          authSlide.type === 'scale' || authSlide.type === 'nps_scale' ? numericCounts : undefined,
+        scaleMean: authSlide.type === 'scale' || authSlide.type === 'slider' ? mean : undefined,
+        npsScore: authSlide.type === 'nps_scale' ? calculateNpsScore(numericValues) : undefined,
+        wordCounts:
+          authSlide.type === 'word_cloud' || authSlide.type === 'type_answer'
+            ? wordCounts
+            : undefined,
+        openResponses: authSlide.type === 'open_ended' ? openResponses : undefined,
       };
       updatePatch.reveal_payload = revealPayload;
     }
