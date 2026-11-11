@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { PublicSlide } from './sanitizer';
+import type { PinTarget } from './slide';
 
 export type GameMode = 'classic' | 'team' | 'challenge';
 
@@ -78,6 +79,11 @@ export const joinGameRequestSchema = z.object({
   teamId: z.string().uuid().optional(),
 });
 
+export const pinCoordinateSchema = z.object({
+  x: z.number().min(0).max(1),
+  y: z.number().min(0).max(1),
+});
+
 export const submitAnswerRequestSchema = z
   .object({
     gameId: z.string().uuid(),
@@ -87,6 +93,9 @@ export const submitAnswerRequestSchema = z
     text: z.string().trim().min(1).max(250).optional(),
     value: z.number().finite().optional(),
     order: z.array(z.string().min(1)).length(4).optional(),
+    pin: pinCoordinateSchema.optional(),
+    brainstormAction: z.enum(['submit_idea', 'vote_idea']).optional(),
+    votedIdeaIds: z.array(z.string().min(1)).max(3).optional(),
   })
   .refine(
     (v) =>
@@ -94,14 +103,18 @@ export const submitAnswerRequestSchema = z
       v.optionIds !== undefined ||
       v.text !== undefined ||
       v.value !== undefined ||
-      v.order !== undefined,
+      v.order !== undefined ||
+      v.pin !== undefined ||
+      v.votedIdeaIds !== undefined,
     { message: 'Answer payload cannot be empty.' }
   );
 
 export type AnswerSubmissionPayload = Pick<
   z.infer<typeof submitAnswerRequestSchema>,
-  'optionId' | 'optionIds' | 'text' | 'value' | 'order'
->;
+  'optionId' | 'optionIds' | 'text' | 'value' | 'order' | 'pin' | 'brainstormAction' | 'votedIdeaIds'
+> & {
+  ideas?: string[];
+};
 
 export const hostStateActionSchema = z.object({
   gameId: z.string().uuid(),
@@ -152,6 +165,9 @@ export interface RevealPayload {
   npsScore?: number | null;
   wordCounts?: { word: string; count: number }[];
   openResponses?: { nickname?: string; text: string }[];
+  pinTarget?: PinTarget;
+  pinDrops?: { x: number; y: number; isCorrect?: boolean | null; nickname?: string }[];
+  brainstormIdeas?: { id: string; text: string; authorNickname?: string; votes: number }[];
 }
 
 export interface LobbyPlayerSummary {

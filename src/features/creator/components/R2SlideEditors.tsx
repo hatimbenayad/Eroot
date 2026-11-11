@@ -6,10 +6,14 @@ import {
   parseSafeVideoEmbed,
   type BigMediaContent,
   type BigTitleContent,
+  type BrainstormContent,
   type BulletPointsContent,
   type ClassicContent,
+  type DropPinContent,
   type NpsScaleContent,
   type OpenEndedContent,
+  type PinAnswerContent,
+  type PinTarget,
   type PuzzleContent,
   type QuoteContent,
   type ScaleContent,
@@ -546,6 +550,289 @@ export function R2SlideEditor({ slide, validation, onUpdateSlide }: R2SlideEdito
             />
           </div>
           {validation?.bodyError && <Tooltip message={validation.bodyError} />}
+        </div>
+      );
+    }
+
+    case 'pin_answer': {
+      const cfg = slide.content as PinAnswerContent;
+      const target: PinTarget = cfg.target ?? { shape: 'circle', cx: 0.5, cy: 0.5, radius: 0.15 };
+      return (
+        <div className="rounded-2xl bg-white p-5 shadow-md space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <p className="text-sm font-bold text-slate-900">Target answer region</p>
+              <p className="text-xs text-slate-500">
+                Click the uploaded slide image to position the target {target.shape}.
+              </p>
+            </div>
+            <div className="flex gap-1.5">
+              <Button
+                type="button"
+                size="sm"
+                variant={target.shape === 'circle' ? 'primary' : 'outline'}
+                onClick={() =>
+                  onUpdateSlide((s) => ({
+                    ...s,
+                    content: {
+                      ...(s.content as PinAnswerContent),
+                      target: { shape: 'circle', cx: 0.5, cy: 0.5, radius: 0.15 },
+                    },
+                  }))
+                }
+              >
+                Circle region
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant={target.shape === 'polygon' ? 'primary' : 'outline'}
+                onClick={() =>
+                  onUpdateSlide((s) => ({
+                    ...s,
+                    content: {
+                      ...(s.content as PinAnswerContent),
+                      target: { shape: 'polygon', points: [] },
+                    },
+                  }))
+                }
+              >
+                Polygon region
+              </Button>
+            </div>
+          </div>
+
+          {slide.mediaUrl ? (
+            <div className="space-y-3">
+              <div className="relative mx-auto w-fit overflow-hidden rounded-xl border border-slate-200 bg-slate-950">
+                <img
+                  src={slide.mediaUrl}
+                  alt="Target region preview"
+                  className="max-h-72 w-auto select-none"
+                  onClick={(e) => {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    if (!rect.width || !rect.height) return;
+                    const x = Number(
+                      Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width)).toFixed(3)
+                    );
+                    const y = Number(
+                      Math.min(1, Math.max(0, (e.clientY - rect.top) / rect.height)).toFixed(3)
+                    );
+                    onUpdateSlide((s) => {
+                      const prev = s.content as PinAnswerContent;
+                      if (prev.target?.shape === 'polygon') {
+                        const pts = [...(prev.target.points ?? []), { x, y }].slice(0, 12);
+                        return {
+                          ...s,
+                          content: { ...prev, target: { shape: 'polygon', points: pts } },
+                        };
+                      }
+                      const rad =
+                        prev.target?.shape === 'circle' ? prev.target.radius : 0.15;
+                      return {
+                        ...s,
+                        content: { ...prev, target: { shape: 'circle', cx: x, cy: y, radius: rad } },
+                      };
+                    });
+                  }}
+                />
+                <svg
+                  viewBox="0 0 100 100"
+                  preserveAspectRatio="none"
+                  className="pointer-events-none absolute inset-0 h-full w-full"
+                >
+                  {target.shape === 'circle' ? (
+                    <circle
+                      cx={target.cx * 100}
+                      cy={target.cy * 100}
+                      r={target.radius * 100}
+                      fill="rgba(21, 128, 61, 0.3)"
+                      stroke="#22c55e"
+                      strokeWidth="1.5"
+                    />
+                  ) : (
+                    <>
+                      {target.points.length >= 2 && (
+                        <polygon
+                          points={target.points.map((p) => `${p.x * 100},${p.y * 100}`).join(' ')}
+                          fill="rgba(21, 128, 61, 0.28)"
+                          stroke="#22c55e"
+                          strokeWidth="1.5"
+                        />
+                      )}
+                      {target.points.map((p, i) => (
+                        <circle key={i} cx={p.x * 100} cy={p.y * 100} r="1.8" fill="#16a34a" />
+                      ))}
+                    </>
+                  )}
+                </svg>
+              </div>
+
+              {target.shape === 'circle' ? (
+                <div className="space-y-1">
+                  <Label htmlFor="pin-circle-radius">
+                    Target radius ({Math.round(target.radius * 100)}%)
+                  </Label>
+                  <input
+                    id="pin-circle-radius"
+                    type="range"
+                    min={0.05}
+                    max={0.45}
+                    step={0.01}
+                    value={target.radius}
+                    onChange={(e) => {
+                      const nextRad = Number(e.target.value);
+                      onUpdateSlide((s) => ({
+                        ...s,
+                        content: {
+                          ...(s.content as PinAnswerContent),
+                          target: {
+                            shape: 'circle',
+                            cx: target.cx,
+                            cy: target.cy,
+                            radius: nextRad,
+                          },
+                        },
+                      }));
+                    }}
+                    className="w-full accent-indigo-600"
+                  />
+                </div>
+              ) : (
+                <div className="flex items-center justify-between text-xs text-slate-600">
+                  <span>Vertices placed: {target.points.length} (min 3)</span>
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={target.points.length === 0}
+                      onClick={() =>
+                        onUpdateSlide((s) => ({
+                          ...s,
+                          content: {
+                            ...(s.content as PinAnswerContent),
+                            target: { shape: 'polygon', points: target.points.slice(0, -1) },
+                          },
+                        }))
+                      }
+                    >
+                      Undo point
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={target.points.length === 0}
+                      onClick={() =>
+                        onUpdateSlide((s) => ({
+                          ...s,
+                          content: {
+                            ...(s.content as PinAnswerContent),
+                            target: { shape: 'polygon', points: [] },
+                          },
+                        }))
+                      }
+                    >
+                      Clear polygon
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <p className="rounded-xl bg-amber-50 p-3 text-xs font-medium text-amber-800">
+              Upload or drag an image into the media block above to define your Pin Answer target region.
+            </p>
+          )}
+
+          <div className="space-y-1">
+            <Label htmlFor="pin-answer-hint">Player instruction hint (optional)</Label>
+            <Input
+              id="pin-answer-hint"
+              value={cfg.hint ?? ''}
+              maxLength={100}
+              placeholder="Tap the target spot on the image"
+              onChange={(e) =>
+                onUpdateSlide((s) => ({
+                  ...s,
+                  content: { ...(s.content as PinAnswerContent), hint: e.target.value },
+                }))
+              }
+            />
+          </div>
+          {validation?.bodyError && <Tooltip message={validation.bodyError} />}
+          {validation?.correctError && <Tooltip message={validation.correctError} />}
+        </div>
+      );
+    }
+
+    case 'drop_pin': {
+      const cfg = slide.content as DropPinContent;
+      return (
+        <div className="rounded-2xl bg-white p-5 shadow-md space-y-3">
+          <div className="space-y-1">
+            <Label htmlFor="drop-pin-hint">Drop pin instruction hint</Label>
+            <Input
+              id="drop-pin-hint"
+              value={cfg.promptHint ?? ''}
+              maxLength={100}
+              placeholder="Drop a pin anywhere on the image"
+              onChange={(e) =>
+                onUpdateSlide((s) => ({ ...s, content: { promptHint: e.target.value } }))
+              }
+            />
+          </div>
+          {!slide.mediaUrl && (
+            <p className="rounded-xl bg-amber-50 p-3 text-xs font-medium text-amber-800">
+              Upload or drag an image into the media block above so players can drop pins onto it.
+            </p>
+          )}
+          {validation?.bodyError && <Tooltip message={validation.bodyError} />}
+        </div>
+      );
+    }
+
+    case 'brainstorm': {
+      const cfg = slide.content as BrainstormContent;
+      return (
+        <div className="rounded-2xl bg-white p-5 shadow-md space-y-3">
+          <div className="space-y-1">
+            <Label htmlFor="brainstorm-hint">Idea submission placeholder</Label>
+            <Input
+              id="brainstorm-hint"
+              value={cfg.promptHint}
+              maxLength={80}
+              placeholder="Share a concise idea (up to 80 chars)"
+              onChange={(e) =>
+                onUpdateSlide((s) => ({
+                  ...s,
+                  content: { ...(s.content as BrainstormContent), promptHint: e.target.value },
+                }))
+              }
+            />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="brainstorm-max">Max ideas per player</Label>
+            <select
+              id="brainstorm-max"
+              value={cfg.maxIdeasPerPlayer ?? 3}
+              onChange={(e) =>
+                onUpdateSlide((s) => ({
+                  ...s,
+                  content: {
+                    ...(s.content as BrainstormContent),
+                    maxIdeasPerPlayer: Number(e.target.value),
+                  },
+                }))
+              }
+              className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900"
+            >
+              <option value={1}>1 idea per player</option>
+              <option value={2}>2 ideas per player</option>
+              <option value={3}>3 ideas per player</option>
+            </select>
+          </div>
         </div>
       );
     }

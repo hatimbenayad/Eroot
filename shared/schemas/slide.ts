@@ -28,6 +28,8 @@ export const OPINION_SLIDE_TYPES = [
   'nps_scale',
   'word_cloud',
   'open_ended',
+  'drop_pin',
+  'brainstorm',
 ] as const;
 
 export const SCORED_SLIDE_TYPES = [
@@ -36,6 +38,7 @@ export const SCORED_SLIDE_TYPES = [
   'type_answer',
   'slider',
   'puzzle',
+  'pin_answer',
 ] as const;
 
 export const ALL_SLIDE_TYPES = [
@@ -122,6 +125,37 @@ export interface OpenEndedContent {
   maxLength: number;
 }
 
+export interface PinPoint {
+  x: number;
+  y: number;
+}
+
+export type PinTarget =
+  | {
+      shape: 'circle';
+      cx: number;
+      cy: number;
+      radius: number;
+    }
+  | {
+      shape: 'polygon';
+      points: PinPoint[];
+    };
+
+export interface PinAnswerContent {
+  target: PinTarget;
+  hint?: string;
+}
+
+export interface DropPinContent {
+  promptHint?: string;
+}
+
+export interface BrainstormContent {
+  promptHint: string;
+  maxIdeasPerPlayer?: number;
+}
+
 export interface ClassicContent {
   body: string;
 }
@@ -158,6 +192,9 @@ export type SlideContent =
   | TypeAnswerContent
   | SliderContent
   | PuzzleContent
+  | PinAnswerContent
+  | DropPinContent
+  | BrainstormContent
   | ScaleContent
   | NpsScaleContent
   | WordCloudContent
@@ -383,10 +420,13 @@ export const slideSchema = z.union([
       'type_answer',
       'slider',
       'puzzle',
+      'pin_answer',
       'scale',
       'nps_scale',
       'word_cloud',
       'open_ended',
+      'drop_pin',
+      'brainstorm',
       'big_title',
       'title_text',
       'bullet_points',
@@ -514,6 +554,29 @@ export function createDefaultSlide(
       return {
         ...base,
         content: { promptHint: 'Share your thoughts...', maxLength: 250 } satisfies OpenEndedContent,
+      };
+    case 'pin_answer':
+      return {
+        ...base,
+        content: {
+          target: { shape: 'circle', cx: 0.5, cy: 0.5, radius: 0.15 },
+          hint: 'Tap the target region on the image',
+        } satisfies PinAnswerContent,
+      };
+    case 'drop_pin':
+      return {
+        ...base,
+        content: {
+          promptHint: 'Drop a pin anywhere on the image',
+        } satisfies DropPinContent,
+      };
+    case 'brainstorm':
+      return {
+        ...base,
+        content: {
+          promptHint: 'Share a concise idea (up to 80 chars)',
+          maxIdeasPerPlayer: 3,
+        } satisfies BrainstormContent,
       };
     case 'classic':
     case 'title_text':

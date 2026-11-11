@@ -12,6 +12,8 @@ export interface PlayerAnswerPayload {
   text?: string;
   value?: number;
   order?: string[];
+  pin?: { x: number; y: number };
+  brainstormAction?: 'submit_idea' | 'vote_idea';
 }
 
 export function PlayerSlideInput({
@@ -29,10 +31,12 @@ export function PlayerSlideInput({
   const [textValue, setTextValue] = useState('');
   const [sliderValue, setSliderValue] = useState<number>(slide.sliderConfig?.min ?? 0);
   const [puzzleOrder, setPuzzleOrder] = useState<PuzzleItem[]>(slide.puzzleItems ?? []);
+  const [pinPos, setPinPos] = useState<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
     setSelectedIds([]);
     setTextValue('');
+    setPinPos(null);
     if (slide.sliderConfig) {
       setSliderValue(
         Math.round((slide.sliderConfig.min + slide.sliderConfig.max) / 2 / slide.sliderConfig.step) *
@@ -284,6 +288,124 @@ export function PlayerSlideInput({
           ))}
         </div>
       </div>
+    );
+  }
+
+  if (slide.type === 'pin_answer' || slide.type === 'drop_pin') {
+    const hintText =
+      slide.type === 'pin_answer'
+        ? slide.pinConfig?.hint || 'Tap the target location on the image'
+        : slide.promptHint || 'Tap to drop your pin';
+    return (
+      <div className="rounded-2xl bg-white p-5 text-slate-900 shadow-lg space-y-4">
+        <p className="text-center text-xs font-bold uppercase tracking-wider text-indigo-700">
+          {hintText}
+        </p>
+        {slide.mediaUrl ? (
+          <div className="relative mx-auto w-fit overflow-hidden rounded-xl border border-slate-200 bg-slate-950">
+            <img
+              src={slide.mediaUrl}
+              alt={slide.title || 'Pin canvas'}
+              className="max-h-72 w-auto cursor-crosshair select-none"
+              onClick={(e) => {
+                const rect = e.currentTarget.getBoundingClientRect();
+                if (!rect.width || !rect.height) return;
+                const x = Number(
+                  Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width)).toFixed(3)
+                );
+                const y = Number(
+                  Math.min(1, Math.max(0, (e.clientY - rect.top) / rect.height)).toFixed(3)
+                );
+                setPinPos({ x, y });
+              }}
+            />
+            {pinPos && (
+              <svg
+                viewBox="0 0 100 100"
+                preserveAspectRatio="none"
+                className="pointer-events-none absolute inset-0 h-full w-full"
+              >
+                <circle
+                  cx={pinPos.x * 100}
+                  cy={pinPos.y * 100}
+                  r="3"
+                  fill="#dc2626"
+                  stroke="#ffffff"
+                  strokeWidth="1.2"
+                />
+              </svg>
+            )}
+          </div>
+        ) : (
+          <button
+            type="button"
+            aria-label="Drop pin coordinate pad"
+            onClick={(e) => {
+              const rect = e.currentTarget.getBoundingClientRect();
+              if (!rect.width || !rect.height) return;
+              const x = Number(
+                Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width)).toFixed(3)
+              );
+              const y = Number(
+                Math.min(1, Math.max(0, (e.clientY - rect.top) / rect.height)).toFixed(3)
+              );
+              setPinPos({ x, y });
+            }}
+            className="relative h-56 w-full rounded-xl border-2 border-dashed border-slate-300 bg-slate-100"
+          >
+            {pinPos && (
+              <span
+                style={{ left: `${pinPos.x * 100}%`, top: `${pinPos.y * 100}%` }}
+                className="absolute h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-red-600 ring-2 ring-white"
+              />
+            )}
+          </button>
+        )}
+        <div className="flex items-center justify-between text-xs font-semibold text-slate-600">
+          <span>
+            {pinPos
+              ? `Pin placed at (${Math.round(pinPos.x * 100)}%, ${Math.round(pinPos.y * 100)}%)`
+              : 'Tap anywhere on the image to set your pin'}
+          </span>
+        </div>
+        <Button
+          type="button"
+          size="lg"
+          className="w-full"
+          disabled={!pinPos || submitting}
+          onClick={() => pinPos && onSubmit({ pin: pinPos })}
+        >
+          Submit pin
+        </Button>
+      </div>
+    );
+  }
+
+  if (slide.type === 'brainstorm') {
+    return (
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          const cleaned = textValue.trim();
+          if (cleaned) {
+            onSubmit({ text: cleaned, brainstormAction: 'submit_idea' });
+            setTextValue('');
+          }
+        }}
+        className="rounded-2xl bg-white p-5 text-slate-900 shadow-lg space-y-3"
+      >
+        <Input
+          aria-label="Share an idea"
+          maxLength={80}
+          value={textValue}
+          onChange={(e) => setTextValue(e.target.value)}
+          placeholder={slide.promptHint || 'Share a concise idea (up to 80 chars)'}
+          className="h-12 text-base font-semibold"
+        />
+        <Button type="submit" size="lg" className="w-full" disabled={!textValue.trim() || submitting}>
+          Submit idea
+        </Button>
+      </form>
     );
   }
 

@@ -158,8 +158,11 @@ export async function submitPlayerAnswer(
     text?: string;
     value?: number;
     order?: string[];
+    pin?: { x: number; y: number };
+    brainstormAction?: 'submit_idea' | 'vote_idea';
+    votedIdeaIds?: string[];
   }
-): Promise<{ accepted: boolean; slideId: string }> {
+): Promise<{ accepted: boolean; slideId: string; ideasCount?: number }> {
   const res = await fetch('/api/games/answer', {
     method: 'POST',
     headers: {
@@ -168,7 +171,7 @@ export async function submitPlayerAnswer(
     },
     body: JSON.stringify(payload),
   });
-  return parseJson<{ accepted: boolean; slideId: string }>(res);
+  return parseJson<{ accepted: boolean; slideId: string; ideasCount?: number }>(res);
 }
 
 export async function kickGamePlayer(
@@ -364,6 +367,7 @@ export async function submitChallengeAnswer(
     text?: string;
     value?: number;
     order?: string[];
+    pin?: { x: number; y: number };
     elapsedMs: number;
   }
 ): Promise<{

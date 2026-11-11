@@ -35,3 +35,4 @@
 | Pin answer submitted without image or polygon `< 3` points in Creator | Slide shows `!` invalid badge and blocks publish/host. |
 | Malicious player sends `x > 1` or `y < 0` | Zod rejects payload with `400 INVALID_REQUEST`. |
 | Player submits > 3 ideas or > 3 votes on Brainstorm | Server enforces max 3 ideas and max 3 upvotes per player (`409` or clipped cleanly). |
+

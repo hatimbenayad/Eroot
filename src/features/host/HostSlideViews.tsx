@@ -126,6 +126,18 @@ export function HostActiveSlideView({
           Waiting for player submissions...
         </div>
       )}
+
+      {(slide.type === 'pin_answer' || slide.type === 'drop_pin') && (
+        <div className="rounded-2xl bg-white/15 p-6 text-center text-lg font-semibold">
+          {slide.pinConfig?.hint || slide.promptHint || 'Players are placing their pin on the image...'}
+        </div>
+      )}
+
+      {slide.type === 'brainstorm' && (
+        <div className="rounded-2xl bg-white/15 p-6 text-center text-lg font-semibold">
+          Brainstorm open: players are submitting ideas...
+        </div>
+      )}
     </div>
   );
 }
@@ -137,6 +149,117 @@ export function HostRevealSlideView({
   slide: PublicSlide;
   reveal: RevealPayload;
 }) {
+  if (slide.type === 'pin_answer' || slide.type === 'drop_pin') {
+    const drops = reveal.pinDrops ?? [];
+    const target = reveal.pinTarget;
+    const hitCount = drops.filter((d) => d.isCorrect).length;
+
+    return (
+      <div className="rounded-3xl bg-white p-6 text-slate-900 shadow-xl space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-sm font-bold text-indigo-700">
+            {slide.type === 'pin_answer'
+              ? `${hitCount} of ${drops.length} pins inside target region`
+              : `${drops.length} pin${drops.length === 1 ? '' : 's'} dropped (heatmap view)`}
+          </p>
+        </div>
+        {slide.mediaUrl && (
+          <div className="relative mx-auto w-fit overflow-hidden rounded-2xl border border-slate-200 bg-slate-950">
+            <img src={slide.mediaUrl} alt={slide.title} className="max-h-96 w-auto" />
+            <svg
+              viewBox="0 0 100 100"
+              preserveAspectRatio="none"
+              className="pointer-events-none absolute inset-0 h-full w-full"
+            >
+              {target?.shape === 'circle' && (
+                <circle
+                  cx={target.cx * 100}
+                  cy={target.cy * 100}
+                  r={target.radius * 100}
+                  fill="rgba(21, 128, 61, 0.32)"
+                  stroke="#22c55e"
+                  strokeWidth="1.5"
+                />
+              )}
+              {target?.shape === 'polygon' && target.points.length >= 3 && (
+                <polygon
+                  points={target.points.map((p) => `${p.x * 100},${p.y * 100}`).join(' ')}
+                  fill="rgba(21, 128, 61, 0.32)"
+                  stroke="#22c55e"
+                  strokeWidth="1.5"
+                />
+              )}
+              {slide.type === 'drop_pin' &&
+                drops.map((d, idx) => (
+                  <circle
+                    key={`heat-${idx}`}
+                    cx={d.x * 100}
+                    cy={d.y * 100}
+                    r="8"
+                    fill="rgba(79, 70, 229, 0.25)"
+                  />
+                ))}
+              {drops.map((d, idx) => (
+                <circle
+                  key={`pin-${idx}`}
+                  cx={d.x * 100}
+                  cy={d.y * 100}
+                  r="1.9"
+                  fill={
+                    slide.type === 'pin_answer'
+                      ? d.isCorrect
+                        ? '#16a34a'
+                        : '#dc2626'
+                      : '#4f46e5'
+                  }
+                  stroke="#ffffff"
+                  strokeWidth="0.7"
+                />
+              ))}
+            </svg>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  if (slide.type === 'brainstorm') {
+    const ideas = reveal.brainstormIdeas ?? [];
+    return (
+      <div className="space-y-4">
+        <div className="rounded-2xl bg-white/15 px-5 py-3 text-center text-sm font-bold text-white">
+          Voting phase active — players can upvote up to 3 ideas from their devices!
+        </div>
+        {ideas.length === 0 ? (
+          <div className="rounded-2xl bg-white p-6 text-center text-slate-600 shadow">
+            No ideas submitted.
+          </div>
+        ) : (
+          <div className="grid gap-3 sm:grid-cols-2">
+            {ideas.map((idea, idx) => (
+              <div
+                key={idea.id}
+                className="flex items-center justify-between gap-3 rounded-2xl bg-white p-4 text-slate-900 shadow-md"
+              >
+                <div className="min-w-0">
+                  <p className="text-base font-bold">
+                    {idx + 1}. {idea.text}
+                  </p>
+                  {idea.authorNickname && (
+                    <p className="text-xs font-semibold text-slate-500">by {idea.authorNickname}</p>
+                  )}
+                </div>
+                <span className="shrink-0 rounded-full bg-indigo-100 px-3 py-1 text-sm font-black text-indigo-800">
+                  {idea.votes} {idea.votes === 1 ? 'vote' : 'votes'}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   if (slide.type === 'quiz' || slide.type === 'true_false' || slide.type === 'poll') {
     return (
       <div className="space-y-6">

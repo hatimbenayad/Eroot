@@ -56,7 +56,7 @@ const TEST_KNOWLEDGE_TYPES: SlideTypeCard[] = [
   { id: 'type_answer', label: 'Type answer', description: 'Short typed text match', icon: Type, slideType: 'type_answer' },
   { id: 'slider', label: 'Slider', description: 'Numeric range estimate', icon: Sliders, slideType: 'slider' },
   { id: 'puzzle', label: 'Puzzle', description: 'Order 4 items in sequence', icon: HelpCircle, slideType: 'puzzle' },
-  { id: 'pin_answer', label: 'Pin answer', description: 'Drop pin on target region', icon: Target, releaseBadge: 'R3' },
+  { id: 'pin_answer', label: 'Pin answer', description: 'Drop pin on target region', icon: Target, slideType: 'pin_answer' },
 ];
 
 const COLLECT_OPINIONS_TYPES: SlideTypeCard[] = [
@@ -65,8 +65,8 @@ const COLLECT_OPINIONS_TYPES: SlideTypeCard[] = [
   { id: 'nps_scale', label: 'NPS scale', description: '0–10 net promoter score', icon: BarChart2, slideType: 'nps_scale' },
   { id: 'word_cloud', label: 'Word cloud', description: 'Short phrases word cloud', icon: Sparkles, slideType: 'word_cloud' },
   { id: 'open_ended', label: 'Open-ended', description: 'Free text up to 250 chars', icon: MessageSquare, slideType: 'open_ended' },
-  { id: 'drop_pin', label: 'Drop pin', description: 'Image pin heatmap', icon: Target, releaseBadge: 'R3' },
-  { id: 'brainstorm', label: 'Brainstorm', description: 'Submit & upvote ideas', icon: MessageSquare, releaseBadge: 'R3' },
+  { id: 'drop_pin', label: 'Drop pin', description: 'Image pin heatmap', icon: Target, slideType: 'drop_pin' },
+  { id: 'brainstorm', label: 'Brainstorm', description: 'Submit & upvote ideas', icon: MessageSquare, slideType: 'brainstorm' },
 ];
 
 const MEDIA_SLIDE_TYPES: SlideTypeCard[] = [

@@ -1,6 +1,8 @@
 import type { AnswerSubmissionPayload } from '../schemas/game';
 import {
   isMediaSlideType,
+  type PinAnswerContent,
+  type PinTarget,
   type PointsMode,
   type PollContent,
   type PuzzleContent,
@@ -10,6 +12,100 @@ import {
   type SliderContent,
   type TypeAnswerContent,
 } from '../schemas/slide';
+
+export function isPointInPinTarget(
+  point: { x: number; y: number },
+  target: PinTarget
+): boolean {
+  if (
+    !Number.isFinite(point.x) ||
+    !Number.isFinite(point.y) ||
+    point.x < 0 ||
+    point.x > 1 ||
+    point.y < 0 ||
+    point.y > 1
+  ) {
+    return false;
+  }
+
+  if (target.shape === 'circle') {
+    return Math.hypot(point.x - target.cx, point.y - target.cy) <= target.radius;
+  }
+
+  const pts = target.points ?? [];
+  if (pts.length < 3) return false;
+  let inside = false;
+  for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+    const xi = pts[i]!.x;
+    const yi = pts[i]!.y;
+    const xj = pts[j]!.x;
+    const yj = pts[j]!.y;
+    const intersect =
+      yi > point.y !== yj > point.y &&
+      point.x < ((xj - xi) * (point.y - yi)) / (yj - yi || 1e-9) + xi;
+    if (intersect) inside = !inside;
+  }
+  return inside;
+}
+
+export interface BrainstormIdeaSummary {
+  id: string;
+  text: string;
+  authorNickname?: string;
+  votes: number;
+}
+
+export function aggregateBrainstormIdeas(
+  rows: ReadonlyArray<{
+    playerId: string;
+    nickname?: string;
+    payload: AnswerSubmissionPayload;
+  }>
+): BrainstormIdeaSummary[] {
+  const ideaMap = new Map<string, BrainstormIdeaSummary>();
+
+  for (const row of rows) {
+    const rawIdeas =
+      Array.isArray(row.payload.ideas) && row.payload.ideas.length > 0
+        ? row.payload.ideas
+        : row.payload.text?.trim()
+          ? [row.payload.text.trim()]
+          : [];
+
+    const seenForPlayer = new Set<string>();
+    let idx = 0;
+    for (const raw of rawIdeas) {
+      const cleaned = raw.trim().slice(0, 80);
+      if (!cleaned) continue;
+      const lower = cleaned.toLowerCase();
+      if (seenForPlayer.has(lower)) continue;
+      seenForPlayer.add(lower);
+      if (idx >= 3) break;
+      const id = `${row.playerId}:${idx}`;
+      ideaMap.set(id, {
+        id,
+        text: cleaned,
+        authorNickname: row.nickname,
+        votes: 0,
+      });
+      idx += 1;
+    }
+  }
+
+  for (const row of rows) {
+    const voted = Array.from(new Set(row.payload.votedIdeaIds ?? [])).slice(0, 3);
+    for (const ideaId of voted) {
+      const entry = ideaMap.get(ideaId);
+      if (entry) {
+        entry.votes += 1;
+      }
+    }
+  }
+
+  return Array.from(ideaMap.values()).sort(
+    (a, b) => b.votes - a.votes || a.text.localeCompare(b.text)
+  );
+}
 
 export function getMaxPoints(mode: PointsMode): number {
   switch (mode) {
@@ -257,6 +353,56 @@ export function evaluateSlideAnswer(
     case 'open_ended': {
       const text = submission.text?.trim() ?? '';
       if (!text || text.length > 250) {
+        return { validOption: false, isCorrect: null, points: 0 };
+      }
+      return { validOption: true, isCorrect: null, points: 0 };
+    }
+
+    case 'pin_answer': {
+      if (
+        !submission.pin ||
+        !Number.isFinite(submission.pin.x) ||
+        !Number.isFinite(submission.pin.y) ||
+        submission.pin.x < 0 ||
+        submission.pin.x > 1 ||
+        submission.pin.y < 0 ||
+        submission.pin.y > 1
+      ) {
+        return { validOption: false, isCorrect: null, points: 0 };
+      }
+      const target = (slide.content as PinAnswerContent).target;
+      const isCorrect = isPointInPinTarget(submission.pin, target);
+      return {
+        validOption: true,
+        isCorrect,
+        points: calculateSpeedPoints({
+          isCorrect,
+          pointsMode: slide.pointsMode,
+          responseMs,
+          questionMs,
+          accuracyOnly,
+        }),
+      };
+    }
+
+    case 'drop_pin': {
+      if (
+        !submission.pin ||
+        !Number.isFinite(submission.pin.x) ||
+        !Number.isFinite(submission.pin.y) ||
+        submission.pin.x < 0 ||
+        submission.pin.x > 1 ||
+        submission.pin.y < 0 ||
+        submission.pin.y > 1
+      ) {
+        return { validOption: false, isCorrect: null, points: 0 };
+      }
+      return { validOption: true, isCorrect: null, points: 0 };
+    }
+
+    case 'brainstorm': {
+      const text = submission.text?.trim() ?? '';
+      if (!text || text.length > 80) {
         return { validOption: false, isCorrect: null, points: 0 };
       }
       return { validOption: true, isCorrect: null, points: 0 };

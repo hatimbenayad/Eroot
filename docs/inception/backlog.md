@@ -98,10 +98,10 @@
   - [x] **Task #52:** `feat(u8): implement Team Mode (2-5 teams, player assignment, mean team question scoring, team scoreboard/podium)`
   - [x] **Task #53:** `feat(u8): implement Self-paced Challenges (Assign modal, deadline/timer/accuracy-only, /challenge/:pin async flow, host management)`
 
-#### Epic #54 — `[U9] Spatial & Collaborative Types` (`type:epic`, `unit:U9`, `priority:p2`)
-- **Story #55:** `As a host and player, I can run Pin answer, Drop pin, and two-phase Brainstorm slides` (`US-011`, `unit:U9`, `area:creator`)
-  - **Task #56:** `feat(u9): implement Pin answer (normalized region target editor, tap submission, server geometry check)`
-  - **Task #57:** `feat(u9): implement Drop pin (opinion heatmap/cluster) and Brainstorm (submit + upvote two-phase flow)`
+#### Epic #54 — `[U9] Spatial & Collaborative Types` (`type:epic`, `unit:U9`, `priority:p2`) — **DONE**
+- [x] **Story #55:** `As a host and player, I can run Pin answer, Drop pin, and two-phase Brainstorm slides` (`US-011`, `unit:U9`, `area:creator`)
+  - [x] **Task #56:** `feat(u9): implement Pin answer (normalized region target editor, tap submission, server geometry check)`
+  - [x] **Task #57:** `feat(u9): implement Drop pin (opinion heatmap/cluster) and Brainstorm (submit + upvote two-phase flow)`
 
 #### Epic #58 — `[U10] Safety, Accessibility, Spanish i18n, Performance & Ops` (`type:epic`, `unit:U10`, `priority:p0`)
 - **Story #59:** `As a user and operator, Eroot passes rate-limiting, WCAG AA, Spanish i18n, Lighthouse mobile budgets, and 100-player load testing` (`US-014`, `unit:U10`, `area:infra`)

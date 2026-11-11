@@ -219,9 +219,19 @@ export function CreatorPreviewModal({
               </div>
             )}
 
-            {(slide.type === 'word_cloud' || slide.type === 'open_ended') && (
+            {(slide.type === 'word_cloud' || slide.type === 'open_ended' || slide.type === 'brainstorm') && (
               <div className="rounded-2xl bg-white/95 p-6 text-center text-slate-800 shadow-md">
                 <p className="text-sm font-medium">{sanitized.promptHint}</p>
+              </div>
+            )}
+
+            {(slide.type === 'pin_answer' || slide.type === 'drop_pin') && (
+              <div className="rounded-2xl bg-white/95 p-6 text-center text-slate-800 shadow-md">
+                <p className="text-sm font-medium">
+                  {slide.type === 'pin_answer'
+                    ? sanitized.pinConfig?.hint ?? 'Tap the target spot on the image'
+                    : sanitized.promptHint ?? 'Drop a pin anywhere on the image'}
+                </p>
               </div>
             )}
           </div>

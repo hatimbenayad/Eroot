@@ -1,13 +1,14 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { hostStateActionSchema, type AnswerSubmissionPayload, type RevealPayload } from '../../shared/schemas/game';
 import type {
+  PinAnswerContent,
   PuzzleContent,
   QuizContent,
   SlideDraft,
   SliderContent,
   TypeAnswerContent,
 } from '../../shared/schemas/slide';
-import { calculateNpsScore } from '../../shared/scoring/scoring';
+import { aggregateBrainstormIdeas, calculateNpsScore } from '../../shared/scoring/scoring';
 import {
   InvalidGameTransitionError,
   transitionGameState,
@@ -114,7 +115,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     if (authSlide) {
       const { data: slideAnswers } = await supabase
         .from('answers')
-        .select('player_id, payload')
+        .select('player_id, payload, is_correct')
         .eq('game_id', gameId)
         .eq('slide_id', authSlide.id);
 
@@ -131,9 +132,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       const numericValues: number[] = [];
       const wordMap = new Map<string, number>();
       const openResponses: { nickname?: string; text: string }[] = [];
+      const pinDrops: { x: number; y: number; isCorrect?: boolean | null; nickname?: string }[] = [];
+      const brainstormRows: { playerId: string; nickname?: string; payload: AnswerSubmissionPayload }[] =
+        [];
 
       for (const ans of slideAnswers ?? []) {
-        const row = ans as { player_id: string; payload?: AnswerSubmissionPayload };
+        const row = ans as {
+          player_id: string;
+          payload?: AnswerSubmissionPayload;
+          is_correct?: boolean | null;
+        };
         const p = row.payload ?? {};
 
         if (p.optionId) {
@@ -156,6 +164,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
           openResponses.push({
             nickname: nicknameById.get(row.player_id),
             text: trimmed,
+          });
+        }
+        if (p.pin && typeof p.pin.x === 'number' && typeof p.pin.y === 'number') {
+          pinDrops.push({
+            x: p.pin.x,
+            y: p.pin.y,
+            isCorrect: row.is_correct ?? null,
+            nickname: nicknameById.get(row.player_id),
+          });
+        }
+        if (authSlide.type === 'brainstorm') {
+          brainstormRows.push({
+            playerId: row.player_id,
+            nickname: nicknameById.get(row.player_id),
+            payload: p,
           });
         }
       }
@@ -207,6 +230,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
             ? wordCounts
             : undefined,
         openResponses: authSlide.type === 'open_ended' ? openResponses : undefined,
+        pinTarget:
+          authSlide.type === 'pin_answer'
+            ? (authSlide.content as PinAnswerContent).target
+            : undefined,
+        pinDrops:
+          authSlide.type === 'pin_answer' || authSlide.type === 'drop_pin'
+            ? pinDrops
+            : undefined,
+        brainstormIdeas:
+          authSlide.type === 'brainstorm' ? aggregateBrainstormIdeas(brainstormRows) : undefined,
       };
       updatePatch.reveal_payload = revealPayload;
     }

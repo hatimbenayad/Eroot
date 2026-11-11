@@ -6,3 +6,4 @@
 4. Add Creator editors in `src/features/creator/components/R2SlideEditors.tsx` (`PinTargetEditor` supporting interactive circle & polygon editing on canvas) and unlock R3 types in `AddSlideModal.tsx` & `PropertiesPanel.tsx`.
 5. Add Host active/reveal views (`HostSlideViews.tsx`) including pin overlay + heatmap clusters + ranked brainstorm cards, and Player spatial tap canvas + brainstorm submit/upvote UI (`PlayerSlideInput.tsx` + `PlayPage.tsx`).
 6. Write unit tests (`tests/unit/r3-spatial-brainstorm.test.ts`), update task tracking, run full verification, commit & push.
+

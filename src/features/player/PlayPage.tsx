@@ -31,6 +31,8 @@ export function PlayPage() {
   const [rank, setRank] = useState(1);
   const [totalPlayers, setTotalPlayers] = useState(1);
   const [submittedSlides, setSubmittedSlides] = useState<Set<string>>(() => new Set());
+  const [brainstormSubmitted, setBrainstormSubmitted] = useState<Record<string, string[]>>({});
+  const [brainstormVotes, setBrainstormVotes] = useState<Record<string, string[]>>({});
   const [feedback, setFeedback] = useState<PlayerQuestionFeedback | null>(null);
   const [kicked, setKicked] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -111,10 +113,21 @@ export function PlayPage() {
     setSubmitting(true);
     setError(null);
     try {
-      await submitPlayerAnswer(sessionToken, { gameId, slideId, ...payload });
-      setSubmittedSlides((prev) => new Set(prev).add(slideId));
+      const res = await submitPlayerAnswer(sessionToken, { gameId, slideId, ...payload });
+      if (payload.brainstormAction === 'submit_idea' && payload.text) {
+        const nextIdeas = [...(brainstormSubmitted[slideId] ?? []), payload.text.trim()];
+        setBrainstormSubmitted((prev) => ({ ...prev, [slideId]: nextIdeas }));
+        const maxIdeas = game?.slides[game.currentSlideIndex]?.maxIdeasPerPlayer ?? 3;
+        if ((res.ideasCount ?? nextIdeas.length) >= maxIdeas) {
+          setSubmittedSlides((prev) => new Set(prev).add(slideId));
+        }
+      } else {
+        setSubmittedSlides((prev) => new Set(prev).add(slideId));
+      }
     } catch (err) {
       if (err instanceof ApiError && err.code === 'ALREADY_ANSWERED') {
+        setSubmittedSlides((prev) => new Set(prev).add(slideId));
+      } else if (err instanceof ApiError && err.code === 'IDEA_LIMIT_REACHED') {
         setSubmittedSlides((prev) => new Set(prev).add(slideId));
       } else if (err instanceof ApiError && err.code === 'PLAYER_KICKED') {
         setKicked(true);
@@ -122,6 +135,32 @@ export function PlayPage() {
       } else {
         setError(err instanceof Error ? err.message : 'Failed to submit answer.');
       }
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function handleToggleBrainstormVote(slideId: string, ideaId: string) {
+    if (!gameId || !sessionToken || submitting) return;
+    const prev = brainstormVotes[slideId] ?? [];
+    const next = prev.includes(ideaId)
+      ? prev.filter((id) => id !== ideaId)
+      : prev.length < 3
+        ? [...prev, ideaId]
+        : prev;
+    if (next === prev) return;
+    setSubmitting(true);
+    setError(null);
+    try {
+      await submitPlayerAnswer(sessionToken, {
+        gameId,
+        slideId,
+        brainstormAction: 'vote_idea',
+        votedIdeaIds: next,
+      });
+      setBrainstormVotes((cur) => ({ ...cur, [slideId]: next }));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not update vote.');
     } finally {
       setSubmitting(false);
     }
@@ -291,6 +330,23 @@ export function PlayPage() {
                   submitting={submitting}
                   onSubmit={(payload) => void handleSubmitAnswer(currentSlide.id, payload)}
                 />
+
+                {currentSlide.type === 'brainstorm' &&
+                  (brainstormSubmitted[currentSlide.id]?.length ?? 0) > 0 && (
+                    <div className="rounded-2xl bg-white/15 p-4 text-sm space-y-2">
+                      <p className="font-bold">
+                        Your ideas ({brainstormSubmitted[currentSlide.id]!.length} /{' '}
+                        {currentSlide.maxIdeasPerPlayer ?? 3}):
+                      </p>
+                      <ul className="space-y-1">
+                        {brainstormSubmitted[currentSlide.id]!.map((idea, idx) => (
+                          <li key={idx} className="rounded-lg bg-white/15 px-3 py-1.5 font-medium">
+                            {idea}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
               </>
             )}
           </div>
@@ -301,7 +357,45 @@ export function PlayPage() {
             data-testid="player-reveal-feedback"
             className="rounded-3xl bg-white p-7 text-center text-slate-900 shadow-2xl space-y-4"
           >
-            {isOpinionSlideType(currentSlide.type) ? (
+            {currentSlide.type === 'brainstorm' ? (
+              <div className="space-y-3 text-left">
+                <div className="text-center">
+                  <h1 className="font-display text-2xl font-black">Vote on ideas</h1>
+                  <p className="text-xs font-semibold text-slate-600">
+                    Pick up to 3 favorites ({(brainstormVotes[currentSlide.id] ?? []).length}/3 used)
+                  </p>
+                </div>
+                {(game.revealPayload?.brainstormIdeas ?? []).length === 0 ? (
+                  <p className="text-center text-sm text-slate-500">No ideas were submitted.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {(game.revealPayload?.brainstormIdeas ?? []).map((idea) => {
+                      const picked = (brainstormVotes[currentSlide.id] ?? []).includes(idea.id);
+                      const atLimit = (brainstormVotes[currentSlide.id] ?? []).length >= 3 && !picked;
+                      return (
+                        <button
+                          key={idea.id}
+                          type="button"
+                          disabled={submitting || atLimit}
+                          onClick={() => void handleToggleBrainstormVote(currentSlide.id, idea.id)}
+                          className={cn(
+                            'flex w-full items-center justify-between gap-3 rounded-xl border p-3 text-left transition-colors',
+                            picked
+                              ? 'border-indigo-600 bg-indigo-50 text-indigo-950'
+                              : 'border-slate-200 bg-white hover:bg-slate-50'
+                          )}
+                        >
+                          <span className="font-semibold text-sm">{idea.text}</span>
+                          <span className="shrink-0 rounded-full bg-indigo-100 px-2.5 py-0.5 text-xs font-bold text-indigo-800">
+                            {idea.votes} {picked ? '· Voted' : ''}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            ) : isOpinionSlideType(currentSlide.type) ? (
               <>
                 <CheckCircle2 className="mx-auto h-12 w-12 text-indigo-600" aria-hidden="true" />
                 <h1 className="font-display text-2xl font-black">Response recorded</h1>

@@ -104,6 +104,7 @@ export function PropertiesPanel({
                   <option value="type_answer">Type answer</option>
                   <option value="slider">Slider</option>
                   <option value="puzzle">Puzzle</option>
+                  <option value="pin_answer">Pin answer</option>
                 </optgroup>
                 <optgroup label="Collect opinions">
                   <option value="poll">Poll</option>
@@ -111,6 +112,8 @@ export function PropertiesPanel({
                   <option value="nps_scale">NPS scale</option>
                   <option value="word_cloud">Word cloud</option>
                   <option value="open_ended">Open-ended</option>
+                  <option value="drop_pin">Drop pin</option>
+                  <option value="brainstorm">Brainstorm</option>
                 </optgroup>
                 <optgroup label="Media slides">
                   <option value="classic">Classic slide</option>

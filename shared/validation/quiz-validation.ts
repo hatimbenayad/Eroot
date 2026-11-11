@@ -4,6 +4,7 @@ import {
   type BigTitleContent,
   type BulletPointsContent,
   type ClassicContent,
+  type PinAnswerContent,
   type PollContent,
   type PuzzleContent,
   type QuizContent,
@@ -142,7 +143,35 @@ export function validateSlide(slide: SlideDraft): SlideValidationResult {
     case 'nps_scale':
     case 'word_cloud':
     case 'open_ended':
+    case 'brainstorm':
       break;
+
+    case 'pin_answer': {
+      const content = slide.content as PinAnswerContent;
+      if (!slide.mediaUrl) {
+        bodyError = 'Upload or link an image for Pin answer.';
+      } else if (!content.target) {
+        correctError = 'Define a target region on the image.';
+      } else if (
+        content.target.shape === 'circle' &&
+        (content.target.radius <= 0.02 || content.target.radius > 0.6)
+      ) {
+        correctError = 'Circle radius must be between 3% and 60%.';
+      } else if (
+        content.target.shape === 'polygon' &&
+        (content.target.points?.length ?? 0) < 3
+      ) {
+        correctError = 'Polygon target requires at least 3 corner points.';
+      }
+      break;
+    }
+
+    case 'drop_pin': {
+      if (!slide.mediaUrl) {
+        bodyError = 'Upload or link an image for Drop pin.';
+      }
+      break;
+    }
 
     case 'classic':
     case 'title_text': {

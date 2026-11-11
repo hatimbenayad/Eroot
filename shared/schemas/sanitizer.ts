@@ -2,10 +2,13 @@ import {
   parseSafeVideoEmbed,
   type BigMediaContent,
   type BigTitleContent,
+  type BrainstormContent,
   type BulletPointsContent,
   type ClassicContent,
+  type DropPinContent,
   type NpsScaleContent,
   type OpenEndedContent,
+  type PinAnswerContent,
   type PointsMode,
   type PollContent,
   type PuzzleContent,
@@ -49,8 +52,10 @@ export interface PublicSlide {
   sliderConfig?: { min: number; max: number; step: number; unit: string };
   puzzleItems?: PuzzleItem[];
   scaleConfig?: { min: number; max: number; minLabel: string; maxLabel: string };
+  pinConfig?: { hasTarget: boolean; hint?: string };
   promptHint?: string;
   maxLength?: number;
+  maxIdeasPerPlayer?: number;
 }
 
 function deterministicShufflePuzzle(items: PuzzleItem[]): PuzzleItem[] {
@@ -164,6 +169,35 @@ export function sanitizeSlideForPlayer(slide: SlideDraft): PublicSlide {
         ...base,
         promptHint: content.promptHint || 'Share your response',
         maxLength: content.maxLength || 250,
+      };
+    }
+
+    case 'pin_answer': {
+      const content = slide.content as PinAnswerContent;
+      return {
+        ...base,
+        pinConfig: {
+          hasTarget: true,
+          hint: content.hint || 'Tap the target spot on the image',
+        },
+      };
+    }
+
+    case 'drop_pin': {
+      const content = slide.content as DropPinContent;
+      return {
+        ...base,
+        promptHint: content.promptHint || 'Drop a pin anywhere on the image',
+      };
+    }
+
+    case 'brainstorm': {
+      const content = slide.content as BrainstormContent;
+      return {
+        ...base,
+        promptHint: content.promptHint || 'Share a short idea',
+        maxLength: 80,
+        maxIdeasPerPlayer: content.maxIdeasPerPlayer ?? 3,
       };
     }
 

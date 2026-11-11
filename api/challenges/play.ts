@@ -2,7 +2,7 @@ import crypto from 'node:crypto';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { z } from 'zod';
 import { generateFriendlyNickname, isNicknameClean } from '../../shared/moderation/nickname';
-import { submitAnswerRequestSchema, type GameOptions } from '../../shared/schemas/game';
+import { pinCoordinateSchema, submitAnswerRequestSchema, type GameOptions } from '../../shared/schemas/game';
 import type { SlideDraft } from '../../shared/schemas/slide';
 import { evaluateSlideAnswer } from '../../shared/scoring/scoring';
 import type { DbGameRow, DbPlayerRow } from '../_lib/game-helpers';
@@ -24,6 +24,7 @@ const challengeActionSchema = z.discriminatedUnion('action', [
     text: z.string().trim().min(1).max(250).optional(),
     value: z.number().finite().optional(),
     order: z.array(z.string().min(1)).length(4).optional(),
+    pin: pinCoordinateSchema.optional(),
     elapsedMs: z.number().min(0).max(600_000).default(0),
   }),
 ]);
@@ -266,6 +267,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       text: parsed.data.text,
       value: parsed.data.value,
       order: parsed.data.order,
+      pin: parsed.data.pin,
     };
 
     const evalRes = evaluateSlideAnswer(slide, submission, elapsedMs, {
