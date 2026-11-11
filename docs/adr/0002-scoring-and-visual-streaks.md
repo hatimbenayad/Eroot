@@ -29,3 +29,4 @@ Live quiz fairness depends on deterministic, tamper-resistant scoring across var
 
 - **Positive:** Deterministic scoring easily covered 100% by Vitest unit tests; zero risk of mid-game creator edits corrupting active games or reports; transparent scoring for players.
 - **Negative:** Slight server-to-client clock skew (e.g., 100-300 ms) means a player's local countdown may differ slightly from `serverReceivedAt - questionStartedAt`. Mitigated by clamping `responseMs` within `[0, questionMs]` and applying a small grace window (e.g., 500 ms after question close for in-flight requests).
+

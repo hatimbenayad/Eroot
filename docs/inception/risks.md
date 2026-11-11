@@ -12,3 +12,4 @@
 | RSK-08 | **Pin answer / Drop pin coordinate mismatch** across varying aspect ratios between Creator desktop and Player mobile screens. | Medium | Medium | Store and submit normalized `(x, y)` coordinates in `[0, 1]` relative to the rendered image box (`object-contain` wrapper locked to natural image aspect ratio), never pixel coordinates. | U9 |
 | RSK-09 | **Yellow/amber answer tile contrast failure** under WCAG AA (`4.5:1`). | High (if white text used) | Medium | Use dark slate ink (`#0f172a`) on bright yellow/amber surfaces (or sufficiently dark `#a16207` background if white text), validated via contrast tokens in U1 and `axe` checks in U10. | U1, U10 |
 | RSK-10 | **Scope creep / accidental AI or paywall references.** | Low | Medium | Keep explicit checks in unit specs and code reviews forbidding AI prompts/endpoints/Upgrade UI; restrict themed arcade modes strictly to `Future`. | All |
+

@@ -21,3 +21,4 @@ Traceability: `US-005` (`#22`), `US-006` (`#23`), `US-012` (`#24`), `US-013` (`#
 - **Given** a blocked profanity nickname submitted on `/join`
 - **When** validated by `isNicknameClean` / `/api/games/join`
 - **Then** the join fails with a clear inline error unless `friendlyNicknames` auto-assigns a safe generated nickname.
+

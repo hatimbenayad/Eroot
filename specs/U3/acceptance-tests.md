@@ -21,3 +21,4 @@ Traceability: `US-004` (`#17`), `FR-005`, `FR-008`, `FR-012`, `FR-013`, `FR-014`
 - **Given** a `Quiz` slide with title `"Favorite color?"` and 4 options
 - **When** switched to `Poll` via `Question type` dropdown
 - **Then** the question title and up to 4 option texts remain intact while `isCorrect` flags are removed.
+

@@ -85,3 +85,4 @@
 - `quizzes` & `slides`: owner (`owner_id = auth.uid()`) has full CRUD; authenticated/anon users can `SELECT` only where `visibility = 'public' AND is_published = true` (and `link` lookup via explicit RPC/route).
 - `media_assets`: owner has full CRUD; Storage bucket `quiz-media` allows authenticated uploads under `<uid>/...` and public read of uploaded media URLs.
 - `game_snapshots`: RLS enabled with **zero** `anon` policies; accessible only by `host_id = auth.uid()` or Service Role inside Vercel Functions.
+

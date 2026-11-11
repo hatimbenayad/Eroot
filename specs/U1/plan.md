@@ -34,3 +34,4 @@
   - `api/health` handler returns `503` when DB env is missing and `200` when mocked Supabase query succeeds.
 - **E2E + Accessibility (Playwright + axe):**
   - Landing (`/`) -> Auth (`/auth`) -> Sign In/Up validation error + protected route redirect (`/library` -> `/auth?redirect=%2Flibrary`) + axe WCAG AA check.
+

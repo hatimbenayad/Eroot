@@ -67,3 +67,4 @@
 | Quiz ID does not exist or belongs to another user | Render `"Quiz not found"` error card with button back to `/library`. |
 | Unsaved changes when clicking `Exit` while saving | Flush pending save before navigating, or warn if save failed. |
 | Deleting the currently selected slide | Selection automatically moves to the nearest remaining slide (`index - 1` or `0`). |
+

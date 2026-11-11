@@ -152,3 +152,4 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     game: buildPublicGamePayload(createdGame, [], 0),
   });
 }
+

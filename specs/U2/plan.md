@@ -15,3 +15,4 @@
 5. **Testing:**
    - Unit tests for `validateSlide`, `validateQuiz`, `themes`, and Zustand Creator store actions (`reorder`, `duplicate`, `delete`, `applyTimeLimitToAll`).
    - Playwright E2E test (with mocked Supabase REST/Auth routes or deterministic test route/store) verifying three-pane render, inline purple validation tooltips, slide reordering, theme switch, and preview modal.
+

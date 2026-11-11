@@ -21,3 +21,4 @@ Traceability: `US-002` (`#9`), `US-003` (`#10`), `FR-001`–`FR-011`.
 - **Given** a valid quiz and one of the 8 Eroot themes selected
 - **When** the creator clicks **Preview**
 - **Then** the preview modal steps through slides under the selected theme without calling live game endpoints.
+

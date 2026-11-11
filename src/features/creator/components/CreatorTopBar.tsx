@@ -1,4 +1,4 @@
-import { Eye, LogOut, Save, Settings } from 'lucide-react';
+import { Eye, LogOut, Play, Save, Settings } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ErootLogo } from '@/components/eroot/ErootLogo';
 import { Button } from '@/components/ui/button';
@@ -9,10 +9,12 @@ import type { SaveStatus } from '../store';
 interface CreatorTopBarProps {
   title: string;
   saveStatus: SaveStatus;
+  canHost?: boolean;
   onTitleChange: (title: string) => void;
   onOpenSettings: () => void;
   onOpenPreview: () => void;
   onSavePublish: () => void;
+  onHostGame?: () => void;
   onRetrySave: () => void;
   onBeforeExit?: () => Promise<void> | void;
 }
@@ -20,10 +22,12 @@ interface CreatorTopBarProps {
 export function CreatorTopBar({
   title,
   saveStatus,
+  canHost = false,
   onTitleChange,
   onOpenSettings,
   onOpenPreview,
   onSavePublish,
+  onHostGame,
   onRetrySave,
 }: CreatorTopBarProps) {
   const { t } = useTranslation();
@@ -92,6 +96,19 @@ export function CreatorTopBar({
           <Save className="h-4 w-4" aria-hidden="true" />
           {t('creator.save')}
         </Button>
+
+        {onHostGame && (
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            disabled={!canHost}
+            onClick={onHostGame}
+          >
+            <Play className="h-4 w-4" aria-hidden="true" />
+            Host
+          </Button>
+        )}
       </div>
     </header>
   );

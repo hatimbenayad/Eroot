@@ -54,3 +54,4 @@ Each unit is an independently deliverable vertical slice backed by an SDD specif
 ### U10 — Safety, Accessibility, Spanish i18n, Performance & Ops (`R3`)
 - **Goal:** Complete Spanish (`es`) translation & language switcher, harden nickname profanity/rate-limiting/security controls, run full WCAG AA + axe + reduced-motion accessibility pass, optimize `/join` mobile Lighthouse budget (>=90 perf / >=95 a11y), execute and document the ~100-player live load sanity test, and finalize `README.md`, `CONTRIBUTING.md`, and `docs/retrospective.md`.
 - **Requirements:** `FR-082`, `FR-084`, `NFR-002`, `NFR-003`, `NFR-004`, `NFR-008`, `NFR-009`.
+

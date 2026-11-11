@@ -48,3 +48,4 @@ All privileged game operations and operational checks live under `/api/*`. JSON 
   - `GET /api/reports/:id/export?format=xlsx|csv` (Host JWT) — generates sanitized workbook/CSV download.
 - **U8 (Self-Paced Challenges):**
   - `POST /api/challenges/create`, `POST /api/challenges/submit`, `PATCH /api/challenges/:id` (deadline/close/remove player).
+

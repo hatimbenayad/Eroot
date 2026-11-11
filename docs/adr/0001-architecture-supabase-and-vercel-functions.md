@@ -30,3 +30,4 @@ Adopt **Supabase** (Postgres + Row Level Security + Auth + Storage + Realtime Br
 
 - **Positive:** Single backend platform (DB, Auth, Storage, Realtime), clean separation of public vs authoritative state, easy local/CI unit testing of scoring and state-machine modules.
 - **Negative / Risks:** Supabase Free tier enforces concurrent connection (~200) and message-rate limits. To comfortably support 100 players in a live game, clients must open **at most one** Realtime channel per active game tab and avoid high-frequency presence chatter (host receives answer counts via throttled server broadcasts or debounced updates rather than 100 simultaneous full-state broadcasts per answer).
+

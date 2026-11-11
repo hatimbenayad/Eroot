@@ -28,3 +28,4 @@ Traceability: `US-001` (`#2`), `FR-080`, `FR-084`, `FR-085`, `NFR-003`, `NFR-005
 - **Given** the rendered `/` and `/auth` pages
 - **When** scanned with `@axe-core/playwright`
 - **Then** zero critical or serious accessibility violations are reported.
+

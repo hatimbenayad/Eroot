@@ -230,3 +230,4 @@ create policy "quiz_media_owner_delete"
     bucket_id = 'quiz-media'
     and (storage.foldername(name))[1] = auth.uid()::text
   );
+

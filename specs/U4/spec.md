@@ -65,3 +65,4 @@ All under `api/games/`:
 | Rate limit exceeded on `/api/games/lookup` or `/api/games/join` | Returns `429 RATE_LIMITED` with retry hint; protects against PIN brute forcing. |
 | Game reaches `max_players` (default 100) | Join returns `409 GAME_FULL` with user-friendly message. |
 | Host edits quiz in another tab during live game | Live game and report read solely from `game_snapshots` & `games.public_slides`; active game is unaffected. |
+

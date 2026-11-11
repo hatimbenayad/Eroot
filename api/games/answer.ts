@@ -146,3 +146,4 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
   // Never leak correctness or points before reveal
   res.status(201).json({ accepted: true, slideId });
 }
+

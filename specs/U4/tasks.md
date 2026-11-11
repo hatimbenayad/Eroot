@@ -8,3 +8,4 @@ Mapped to `docs/inception/backlog.md` Epic `#21` and Stories `#22`–`#25`:
 - [ ] **#29** `feat(u4): build Host Game Options modal, Lobby (PIN, QR, player roster, kick, Web Audio music) & Question/Reveal/Scoreboard/Podium screens`
 - [ ] **#30** `feat(u4): build mobile-first Player screens (/join, /play/:id, geometric answer tiles, feedback, visual streak, localStorage reconnect)`
 - [ ] **#31** `test(u4): add Playwright E2E full live game test (host + 2 players) and mobile viewport verification`
+

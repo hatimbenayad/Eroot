@@ -19,3 +19,4 @@
 6. **Playwright E2E (`#31`):**
    - Multi-context Playwright E2E test simulating **1 Host browser + 2 Player mobile browsers** (intercepting `/api/games/*` + Realtime broadcast via deterministic test bridge or mocked in-memory hub inside Playwright `page.route`!) running through the full loop: Create Lobby -> Join 2 Players (incl. reconnect + kick test) -> Question Active -> Answer Submission (fast vs slow) -> Reveal Distribution -> Top-5 Scoreboard -> Animated Top-3 Podium -> Ended!
    - Also check `axe` accessibility on `/join`, `/play/:id`, and `/host/:id`.
+

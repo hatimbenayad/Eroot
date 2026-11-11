@@ -191,3 +191,4 @@ Stories are grouped by persona and trace to Requirements (`FR-*`, `NFR-*`) and A
   - **Given** the scripted ~100-player live game simulation
     **When** executed against staging/local target
     **Then** results (latency, success rate, realtime delivery) are recorded under `docs/` without connection drops or scoring inconsistencies.
+

@@ -4,6 +4,7 @@ import { Loader2 } from 'lucide-react';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/features/auth/useAuth';
+import { GameOptionsModal } from '@/features/host/GameOptionsModal';
 import { useTranslation } from '@/i18n/useTranslation';
 import { fetchQuizWithSlides, saveQuizAndSlides, uploadQuizMedia } from './api';
 import { AddSlideModal } from './components/AddSlideModal';
@@ -25,6 +26,7 @@ export function CreatorPage() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [addSlideOpen, setAddSlideOpen] = useState(false);
+  const [hostModalOpen, setHostModalOpen] = useState(false);
   const [publishNotice, setPublishNotice] = useState<string | null>(null);
 
   const quiz = useCreatorStore((s) => s.quiz);
@@ -177,10 +179,15 @@ export function CreatorPage() {
       <CreatorTopBar
         title={quiz.title}
         saveStatus={saveStatus}
+        canHost={validation.valid}
         onTitleChange={(title) => updateQuizMeta({ title })}
         onOpenSettings={() => setSettingsOpen(true)}
         onOpenPreview={() => setPreviewOpen(true)}
         onSavePublish={() => void handleSavePublish()}
+        onHostGame={async () => {
+          await persistNow(true);
+          setHostModalOpen(true);
+        }}
         onRetrySave={() => void persistNow(false)}
       />
 
@@ -248,6 +255,13 @@ export function CreatorPage() {
         open={addSlideOpen}
         onOpenChange={setAddSlideOpen}
         onSelectType={(slideType) => addSlide(slideType)}
+      />
+
+      <GameOptionsModal
+        open={hostModalOpen}
+        onOpenChange={setHostModalOpen}
+        quizId={quiz.id}
+        quizTitle={quiz.title}
       />
     </div>
   );

@@ -29,3 +29,4 @@ The platform reproduces the gameplay and creator ergonomics of modern live-quiz 
 
 - **Positive:** Zero IP/licensing risk, instant offline-safe audio without large MP3 bundles, accessible to colour-blind and keyboard-only users by default.
 - **Negative:** Yellow/amber tiles require careful foreground contrast (`#0f172a` dark text/icon on bright yellow or darker `#b45309` surface for white text — verify WCAG AA >= 4.5:1 during U1 design system implementation).
+

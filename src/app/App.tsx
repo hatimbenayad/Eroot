@@ -9,9 +9,11 @@ import { AuthPage } from '@/features/auth/AuthPage';
 import { AuthProvider } from '@/features/auth/AuthProvider';
 import { RequireAuth } from '@/features/auth/RequireAuth';
 import { CreatorPage } from '@/features/creator/CreatorPage';
-import { JoinPage } from '@/features/join/JoinPage';
+import { HostGamePage } from '@/features/host/HostGamePage';
 import { LandingPage } from '@/features/landing/LandingPage';
 import { LibraryPage } from '@/features/library/LibraryPage';
+import { JoinPage } from '@/features/player/JoinPage';
+import { PlayPage } from '@/features/player/PlayPage';
 import { ReportsPage } from '@/features/reports/ReportsPage';
 import { I18nProvider } from '@/i18n/I18nProvider';
 
@@ -51,9 +53,11 @@ export function App() {
                   <Route path="/" element={<LandingPage />} />
                   <Route path="/auth" element={<AuthPage />} />
                   <Route path="/join" element={<JoinPage />} />
+                  <Route path="/play/:gameId" element={<PlayPage />} />
 
                   <Route element={<RequireAuth />}>
                     <Route path="/creator/:quizId" element={<CreatorPage />} />
+                    <Route path="/host/:gameId" element={<HostGamePage />} />
                     <Route element={<HostAppShell />}>
                       <Route path="/library" element={<LibraryPage />} />
                       <Route path="/reports" element={<ReportsPage />} />

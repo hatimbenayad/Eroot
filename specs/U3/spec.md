@@ -44,3 +44,4 @@
 | Switching a `Quiz` or `True/False` to `Classic` | Preserves heading (`title`) and image (`mediaUrl`), initializes `content.body = ''`, sets `pointsMode = 'none'`. |
 | Quiz has 4 default slots where slots 3 and 4 are left blank | Valid as long as slots 1 and 2 are filled and >= 1 filled slot is marked correct; `sanitizeSlideForPlayer` filters out blank optional slots on live play. |
 | Poll has 3rd option left blank | Valid as long as >= 2 options are filled; `sanitizeSlideForPlayer` omits blank options. |
+

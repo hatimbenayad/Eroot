@@ -3,3 +3,4 @@ contact_links:
   - name: Architecture Decision Records
     url: https://github.com/hatimbenayad/Eroot/tree/main/docs/adr
     about: Review existing ADRs before proposing structural changes.
+

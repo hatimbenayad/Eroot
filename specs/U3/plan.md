@@ -12,3 +12,4 @@
    - Refine `CreatorPreviewModal.tsx` to omit blank optional options, show Poll simulated bar preview, and handle Classic slides cleanly.
 4. **Tests:**
    - Unit tests for Zod `slideSchema`, `sanitizeSlideForPlayer` (ensuring `isCorrect` is completely stripped), type switching (`quiz -> poll -> classic -> true_false`), and RTL tests for `AddSlideModal` + Quiz/Poll/TrueFalse/Classic creation and validation.
+

@@ -194,3 +194,4 @@ begin
   where id = p_player_id;
 end;
 $$;
+

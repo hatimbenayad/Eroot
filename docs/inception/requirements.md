@@ -121,3 +121,4 @@
 
 - **Excluded permanently per project rules:** AI question/image generation (`Generate` tab, sparkle `Create` button), paid plans/Upgrade banners/subscriptions, PowerPoint/Teams/Google Slides integrations, slide-deck import, courses, Kids/Family profiles, flashcards/study groups, language-learning app, paid content marketplace.
 - **Deferred to `Future` milestone:** Themed arcade game modes (Robot Run, Treasure Trove, Color Kingdoms, Tallest Tower, Submarine Squad, Rocket Race), auto-play host mode, real-time multi-host collaborators, additional locales beyond English & Spanish.
+

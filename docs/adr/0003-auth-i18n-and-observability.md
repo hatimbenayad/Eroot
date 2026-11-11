@@ -25,3 +25,4 @@ We need to deliver an immediately usable MVP in R1 without external OAuth setup 
 
 - **Positive:** Fast R1 delivery, zero third-party privacy footprint, zero rework when adding Spanish in R3.
 - **Negative:** No automated client-side crash aggregation tool like Sentry; relies on Vercel Function logs, Playwright E2E coverage, and unit tests to catch regressions early.
+

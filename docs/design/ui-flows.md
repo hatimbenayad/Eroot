@@ -27,3 +27,4 @@
 4. **Geometric Answer Tile Primitive (`AnswerTile`):**
    - Used across Creator (U2/U3), Preview (U2), Host Reveal (U4), and Player Play (U4).
    - Always displays: distinct background colour + distinct SVG geometric shape + accessible letter/text label (e.g., Red Triangle `A`, Blue Diamond `B`, Yellow Circle `C` with dark `#0f172a` contrast ink, Green Square `D`, plus Teal Hexagon `E` and Purple Star `F` for 5–6 options).
+

@@ -62,3 +62,4 @@ Eroot/
     unit/               Vitest unit tests (shared + components)
     e2e/                Playwright end-to-end & axe accessibility tests
 ```
+

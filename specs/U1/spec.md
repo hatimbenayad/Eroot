@@ -71,3 +71,4 @@
 - **Empty state:** `/library` (U1 placeholder shell before U2/U7 full library) shows an empty state card ("No quizzes yet — Creator arrives in U2") and sign-out action.
 - **Loading state:** Session hydration spinner; Auth submit button disabled with spinner & `aria-busy="true"`.
 - **Error state:** Inline form field errors (`aria-invalid="true"`, `aria-describedby`) + top alert banner (`role="alert"`).
+

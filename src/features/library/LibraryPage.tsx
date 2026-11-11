@@ -20,6 +20,7 @@ import {
   fetchLibraryQuizzes,
   type LibraryQuizSummary,
 } from '@/features/creator/api';
+import { GameOptionsModal } from '@/features/host/GameOptionsModal';
 import { useTranslation } from '@/i18n/useTranslation';
 import { getErootTheme } from '@shared/constants/themes';
 
@@ -29,6 +30,7 @@ export function LibraryPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [deleteTarget, setDeleteTarget] = useState<LibraryQuizSummary | null>(null);
+  const [hostTarget, setHostTarget] = useState<LibraryQuizSummary | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
 
   const quizzesQuery = useQuery({
@@ -168,9 +170,10 @@ export function LibraryPage() {
                     type="button"
                     size="sm"
                     disabled={!item.quiz.isValid}
+                    onClick={() => setHostTarget(item)}
                     title={
                       item.quiz.isValid
-                        ? 'Live hosting launches in U4'
+                        ? 'Launch live game'
                         : 'Fix invalid slides before hosting'
                     }
                   >
@@ -231,6 +234,12 @@ export function LibraryPage() {
           </div>
         </DialogContent>
       </Dialog>
+      <GameOptionsModal
+        open={Boolean(hostTarget)}
+        onOpenChange={(open) => !open && setHostTarget(null)}
+        quizId={hostTarget?.quiz.id ?? null}
+        quizTitle={hostTarget?.quiz.title ?? ''}
+      />
     </div>
   );
 }
