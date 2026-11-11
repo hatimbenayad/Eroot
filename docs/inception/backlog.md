@@ -29,13 +29,13 @@
 
 ### Milestone: R1 MVP (`v0.1.0`)
 
-#### Epic #1 — `[U1] Foundation, Auth & Design System` (`type:epic`, `unit:U1`, `priority:p0`)
-- **Story #2:** `As a host, I can register and sign in with email and password` (`US-001`, `unit:U1`, `area:infra`)
-  - **Task #3:** `chore(u1): scaffold Vite + React 18 + TS + Tailwind + Radix + ESLint/Prettier + Vitest/Playwright`
-  - **Task #4:** `feat(u1): implement Eroot design system tokens, geometric shape+colour tile primitives, and i18n dictionary scaffold (en)`
-  - **Task #5:** `feat(u1): add initial Supabase Postgres migrations, RLS policies, and Storage bucket setup`
-  - **Task #6:** `feat(u1): implement email/password Auth flow, protected route guards, and /api/health endpoint`
-  - **Task #7:** `chore(u1): configure Vercel deployment (vercel.json, .env.example) and CI lint/typecheck/unit checks`
+#### Epic #1 — `[U1] Foundation, Auth & Design System` (`type:epic`, `unit:U1`, `priority:p0`) — **DONE**
+- [x] **Story #2:** `As a host, I can register and sign in with email and password` (`US-001`, `unit:U1`, `area:infra`)
+  - [x] **Task #3:** `chore(u1): scaffold Vite + React 18 + TS + Tailwind + Radix + ESLint/Prettier + Vitest/Playwright`
+  - [x] **Task #4:** `feat(u1): implement Eroot design system tokens, geometric shape+colour tile primitives, and i18n dictionary scaffold (en)`
+  - [x] **Task #5:** `feat(u1): add initial Supabase Postgres migrations, RLS policies, and Storage bucket setup`
+  - [x] **Task #6:** `feat(u1): implement email/password Auth flow, protected route guards, and /api/health endpoint`
+  - [x] **Task #7:** `chore(u1): configure Vercel deployment (vercel.json, .env.example) and CI lint/typecheck/unit checks`
 
 #### Epic #8 — `[U2] Creator Core` (`type:epic`, `unit:U2`, `priority:p0`)
 - **Story #9:** `As a creator, I can build, reorder, theme, upload images, preview, and autosave quizzes` (`US-002`, `unit:U2`, `area:creator`)
@@ -118,3 +118,4 @@
 - **Future #65:** `[Future] Auto-play host pacing mode` (`priority:p2`)
 - **Future #66:** `[Future] Real-time quiz collaborators via email invite` (`priority:p2`)
 - **Future #67:** `[Future] Additional UI languages (French, Arabic)` (`priority:p2`)
+
