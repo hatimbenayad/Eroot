@@ -227,7 +227,13 @@ export function CreatorPage() {
             updateSlide(activeSlide.id, (s) => ({ ...s, timeLimit }))
           }
           onApplyTimeLimitToAll={applyTimeLimitToAll}
+          onChangeSelectMode={(selectMode) =>
+            updateSlide(activeSlide.id, (s) => ({ ...s, selectMode }))
+          }
           onChangePointsMode={(mode) => setPointsMode(activeSlide.id, mode)}
+          onToggleMediaReveal={(mediaReveal) =>
+            updateSlide(activeSlide.id, (s) => ({ ...s, mediaReveal }))
+          }
           onSelectTheme={(themeId) => updateQuizMeta({ themeId })}
           onDuplicateSlide={() => duplicateSlide(activeSlide.id)}
           onDeleteSlide={() => deleteSlide(activeSlide.id)}

@@ -24,8 +24,21 @@ import type { SlideValidationResult } from '@shared/validation/quiz-validation';
 const SLIDE_TYPE_LABELS: Record<SlideType, string> = {
   quiz: 'Quiz',
   true_false: 'True or false',
+  type_answer: 'Type answer',
+  slider: 'Slider',
+  puzzle: 'Puzzle',
   poll: 'Poll',
+  scale: 'Scale',
+  nps_scale: 'NPS scale',
+  word_cloud: 'Word cloud',
+  open_ended: 'Open-ended',
   classic: 'Classic',
+  big_title: 'Big title',
+  title_text: 'Title & text',
+  bullet_points: 'Bullets',
+  quote: 'Quote',
+  big_media: 'Big media',
+  video: 'Video',
 };
 
 interface SortableSlideItemProps {

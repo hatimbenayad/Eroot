@@ -12,7 +12,15 @@ import {
 import { cn } from '@/lib/cn';
 import { getErootTheme } from '@shared/constants/themes';
 import { sanitizeSlideForPlayer } from '@shared/schemas/sanitizer';
-import type { ClassicContent, QuizContent, SlideDraft } from '@shared/schemas/slide';
+import {
+  isMediaSlideType,
+  isOpinionSlideType,
+  type PuzzleContent,
+  type QuizContent,
+  type SlideDraft,
+  type SliderContent,
+  type TypeAnswerContent,
+} from '@shared/schemas/slide';
 
 interface CreatorPreviewModalProps {
   open: boolean;
@@ -47,6 +55,8 @@ export function CreatorPreviewModal({
   if (!slide) return null;
 
   const sanitized = sanitizeSlideForPlayer(slide);
+  const isMedia = isMediaSlideType(slide.type);
+  const isOpinion = isOpinionSlideType(slide.type);
   const quizCorrectIds =
     slide.type === 'quiz' || slide.type === 'true_false'
       ? new Set(
@@ -77,6 +87,9 @@ export function CreatorPreviewModal({
               <h3 className="font-display text-xl font-bold sm:text-2xl">
                 {slide.title.trim() || 'Untitled question'}
               </h3>
+              {sanitized.subtitle && (
+                <p className="mt-2 text-base text-slate-600">{sanitized.subtitle}</p>
+              )}
             </div>
 
             {slide.mediaUrl && (
@@ -84,36 +97,131 @@ export function CreatorPreviewModal({
                 <img
                   src={slide.mediaUrl}
                   alt="Preview slide visual"
-                  className="max-h-56 rounded-xl bg-white/10 object-contain p-1"
+                  className={cn(
+                    'max-h-56 rounded-xl bg-white/10 object-contain p-1 transition-all duration-700',
+                    slide.mediaReveal && !revealed && 'blur-md scale-95'
+                  )}
                 />
               </div>
             )}
 
-            {slide.type === 'classic' ? (
+            {slide.type === 'video' && sanitized.embedUrl && (
+              <div className="mx-auto max-w-xl aspect-video overflow-hidden rounded-xl bg-black">
+                <iframe
+                  src={sanitized.embedUrl}
+                  title={slide.title || 'Video preview'}
+                  className="h-full w-full"
+                  allowFullScreen
+                />
+              </div>
+            )}
+
+            {(slide.type === 'classic' || slide.type === 'title_text') && (
               <div className="rounded-2xl bg-white/95 p-6 text-center text-slate-800 shadow-md">
                 <p className="whitespace-pre-line text-base leading-relaxed">
-                  {(slide.content as ClassicContent).body || 'Slide body text...'}
+                  {sanitized.body || 'Slide body text...'}
                 </p>
               </div>
-            ) : (
-              <div className="space-y-3">
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  {sanitized.options.map((opt, optIdx) => (
-                    <AnswerTile
-                      key={opt.id}
-                      index={optIdx}
-                      label={opt.text || `Answer ${optIdx + 1}`}
-                      interactive={false}
-                      revealed={revealed && quizCorrectIds !== null}
-                      isCorrect={quizCorrectIds ? quizCorrectIds.has(opt.id) : undefined}
-                    />
-                  ))}
-                </div>
-                {slide.type === 'poll' && (
-                  <p className="text-center text-xs font-medium opacity-85">
-                    Poll — No points awarded; live distribution displays on reveal.
+            )}
+
+            {slide.type === 'bullet_points' && (
+              <ul className="mx-auto max-w-xl list-disc space-y-2 rounded-2xl bg-white/95 p-6 pl-10 text-left text-slate-800 shadow-md">
+                {(sanitized.bullets ?? []).map((b, i) => (
+                  <li key={i} className="text-base font-medium">
+                    {b}
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {slide.type === 'quote' && (
+              <blockquote className="rounded-2xl bg-white/95 p-6 text-center text-slate-900 shadow-md space-y-2">
+                <p className="text-xl italic font-semibold">&ldquo;{sanitized.quote}&rdquo;</p>
+                {sanitized.author && (
+                  <footer className="text-sm font-medium text-slate-600">
+                    — {sanitized.author}
+                  </footer>
+                )}
+              </blockquote>
+            )}
+
+            {(slide.type === 'quiz' || slide.type === 'true_false' || slide.type === 'poll') && (
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {sanitized.options.map((opt, optIdx) => (
+                  <AnswerTile
+                    key={opt.id}
+                    index={optIdx}
+                    label={opt.text || `Answer ${optIdx + 1}`}
+                    imageUrl={opt.imageUrl}
+                    interactive={false}
+                    revealed={revealed && quizCorrectIds !== null}
+                    isCorrect={quizCorrectIds ? quizCorrectIds.has(opt.id) : undefined}
+                  />
+                ))}
+              </div>
+            )}
+
+            {slide.type === 'type_answer' && (
+              <div className="rounded-2xl bg-white/95 p-6 text-center text-slate-900 shadow-md">
+                {revealed ? (
+                  <p className="text-sm font-bold text-emerald-700">
+                    Accepted:{' '}
+                    {(slide.content as TypeAnswerContent).acceptedAnswers
+                      .filter(Boolean)
+                      .join(', ')}
+                  </p>
+                ) : (
+                  <p className="text-sm text-slate-600">Players type a short answer (max 20 chars).</p>
+                )}
+              </div>
+            )}
+
+            {slide.type === 'slider' && (
+              <div className="rounded-2xl bg-white/95 p-6 text-center text-slate-900 shadow-md">
+                <p className="text-sm font-semibold">
+                  Range: {sanitized.sliderConfig?.min} – {sanitized.sliderConfig?.max}{' '}
+                  {sanitized.sliderConfig?.unit}
+                </p>
+                {revealed && (
+                  <p className="mt-2 text-base font-bold text-emerald-700">
+                    Target: {(slide.content as SliderContent).correctValue} (+/-{' '}
+                    {(slide.content as SliderContent).tolerance})
                   </p>
                 )}
+              </div>
+            )}
+
+            {slide.type === 'puzzle' && (
+              <div className="space-y-2">
+                {(revealed
+                  ? (slide.content as PuzzleContent).items
+                  : sanitized.puzzleItems ?? []
+                ).map((it, idx) => (
+                  <div
+                    key={it.id}
+                    className="rounded-xl bg-white px-4 py-3 text-sm font-bold text-slate-900 shadow"
+                  >
+                    {idx + 1}. {it.text}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {(slide.type === 'scale' || slide.type === 'nps_scale') && sanitized.scaleConfig && (
+              <div className="rounded-2xl bg-white/95 p-6 text-center text-slate-900 shadow-md space-y-2">
+                <p className="text-sm font-semibold">
+                  Scale {sanitized.scaleConfig.min} to {sanitized.scaleConfig.max}
+                </p>
+                <div className="flex justify-between text-xs text-slate-600">
+                  <span>{sanitized.scaleConfig.minLabel}</span>
+                  <span>{sanitized.scaleConfig.maxLabel}</span>
+                </div>
+              </div>
+            )}
+
+            {(slide.type === 'word_cloud' || slide.type === 'open_ended') && (
+              <div className="rounded-2xl bg-white/95 p-6 text-center text-slate-800 shadow-md">
+                <p className="text-sm font-medium">{sanitized.promptHint}</p>
               </div>
             )}
           </div>
@@ -148,7 +256,7 @@ export function CreatorPreviewModal({
               </Button>
             </div>
 
-            {slide.type !== 'classic' && slide.type !== 'poll' && (
+            {!isMedia && !isOpinion && (
               <Button
                 type="button"
                 variant="stage"

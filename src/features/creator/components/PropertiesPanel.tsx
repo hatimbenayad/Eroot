@@ -14,8 +14,11 @@ import { useTranslation } from '@/i18n/useTranslation';
 import { cn } from '@/lib/cn';
 import { EROOT_THEMES } from '@shared/constants/themes';
 import {
+  isMediaSlideType,
+  isOpinionSlideType,
   TIME_LIMITS,
   type PointsMode,
+  type SelectMode,
   type SlideDraft,
   type SlideType,
   type TimeLimit,
@@ -28,7 +31,9 @@ interface PropertiesPanelProps {
   onChangeType: (nextType: SlideType) => void;
   onChangeTimeLimit: (limit: TimeLimit) => void;
   onApplyTimeLimitToAll: (limit: TimeLimit) => void;
+  onChangeSelectMode: (mode: SelectMode) => void;
   onChangePointsMode: (mode: PointsMode) => void;
+  onToggleMediaReveal: (enabled: boolean) => void;
   onSelectTheme: (themeId: string) => void;
   onDuplicateSlide: () => void;
   onDeleteSlide: () => void;
@@ -41,7 +46,9 @@ export function PropertiesPanel({
   onChangeType,
   onChangeTimeLimit,
   onApplyTimeLimitToAll,
+  onChangeSelectMode,
   onChangePointsMode,
+  onToggleMediaReveal,
   onSelectTheme,
   onDuplicateSlide,
   onDeleteSlide,
@@ -49,12 +56,13 @@ export function PropertiesPanel({
   const { t } = useTranslation();
   const [helpOpen, setHelpOpen] = useState(false);
 
-  const isOpinionOrMedia = slide.type === 'poll' || slide.type === 'classic';
+  const isOpinionOrMedia = isOpinionSlideType(slide.type) || isMediaSlideType(slide.type);
+  const canMultiSelect = slide.type === 'quiz';
 
   return (
     <aside
       aria-label="Question properties and themes"
-      className="flex w-72 shrink-0 flex-col border-l border-slate-200 bg-white p-4"
+      className="flex w-72 shrink-0 flex-col border-l border-slate-200 bg-white p-4 overflow-y-auto"
     >
       <Tabs defaultValue="properties" className="flex flex-1 flex-col">
         <div className="flex items-center justify-between gap-2">
@@ -90,10 +98,29 @@ export function PropertiesPanel({
                 onChange={(e) => onChangeType(e.target.value as SlideType)}
                 className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900"
               >
-                <option value="quiz">Quiz</option>
-                <option value="true_false">True or false</option>
-                <option value="poll">Poll</option>
-                <option value="classic">Classic slide</option>
+                <optgroup label="Test knowledge">
+                  <option value="quiz">Quiz</option>
+                  <option value="true_false">True or false</option>
+                  <option value="type_answer">Type answer</option>
+                  <option value="slider">Slider</option>
+                  <option value="puzzle">Puzzle</option>
+                </optgroup>
+                <optgroup label="Collect opinions">
+                  <option value="poll">Poll</option>
+                  <option value="scale">Scale</option>
+                  <option value="nps_scale">NPS scale</option>
+                  <option value="word_cloud">Word cloud</option>
+                  <option value="open_ended">Open-ended</option>
+                </optgroup>
+                <optgroup label="Media slides">
+                  <option value="classic">Classic slide</option>
+                  <option value="big_title">Big title</option>
+                  <option value="title_text">Title and text</option>
+                  <option value="bullet_points">Bullet points</option>
+                  <option value="quote">Quote</option>
+                  <option value="big_media">Big media</option>
+                  <option value="video">Video</option>
+                </optgroup>
               </select>
             </div>
 
@@ -124,11 +151,13 @@ export function PropertiesPanel({
               <Label htmlFor="prop-answer-options">{t('creator.properties.answerOptions')}</Label>
               <select
                 id="prop-answer-options"
-                value={slide.selectMode}
-                disabled
-                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-600"
+                value={canMultiSelect ? slide.selectMode : 'single'}
+                disabled={!canMultiSelect}
+                onChange={(e) => onChangeSelectMode(e.target.value as SelectMode)}
+                className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 disabled:bg-slate-50 disabled:text-slate-600"
               >
                 <option value="single">{t('creator.properties.singleSelect')}</option>
+                {canMultiSelect && <option value="multi">Multi-select</option>}
               </select>
             </div>
 
@@ -146,6 +175,18 @@ export function PropertiesPanel({
                 <option value="none">{t('creator.properties.noPoints')}</option>
               </select>
             </div>
+
+            {slide.mediaUrl && (
+              <label className="flex items-center justify-between gap-2 rounded-lg border border-slate-200 p-2.5 text-xs font-medium text-slate-800">
+                <span>Gradual image reveal</span>
+                <input
+                  type="checkbox"
+                  checked={slide.mediaReveal}
+                  onChange={(e) => onToggleMediaReveal(e.target.checked)}
+                  className="h-4 w-4 accent-indigo-600"
+                />
+              </label>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-2 border-t border-slate-200 pt-4">
@@ -203,13 +244,12 @@ export function PropertiesPanel({
             <DialogDescription>{t('creator.helpModal.body')}</DialogDescription>
           </DialogHeader>
           <ul className="mt-3 list-disc space-y-1.5 pl-5 text-sm text-slate-700">
-            <li>Drag slide handles or use Move Up / Move Down buttons to reorder slides.</li>
-            <li>Standard scoring awards up to 1000 pts based on speed; Double awards up to 2000 pts.</li>
-            <li>Polls and Classic media slides award 0 points automatically.</li>
+            <li>Multi-select awards partial points for correct selections, or 0 on any wrong pick.</li>
+            <li>Type answer is case-insensitive and trimmed (max 20 chars).</li>
+            <li>Opinion slides (Poll, Scale, NPS, Word cloud, Open-ended) and Media slides score 0.</li>
           </ul>
         </DialogContent>
       </Dialog>
     </aside>
   );
 }
-

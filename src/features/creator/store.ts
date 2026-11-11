@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import {
   createDefaultSlide,
   createSlideId,
+  isMediaSlideType,
+  isOpinionSlideType,
   type PointsMode,
   type QuizContent,
   type QuizDraft,
@@ -22,7 +24,8 @@ export function convertSlideType(slide: SlideDraft, nextType: SlideType): SlideD
   base.mediaUrl = slide.mediaUrl;
   base.mediaReveal = slide.mediaReveal;
   base.timeLimit = slide.timeLimit;
-  base.pointsMode = nextType === 'poll' || nextType === 'classic' ? 'none' : slide.pointsMode === 'none' ? 'standard' : slide.pointsMode;
+  const nonScored = isOpinionSlideType(nextType) || isMediaSlideType(nextType);
+  base.pointsMode = nonScored ? 'none' : slide.pointsMode === 'none' ? 'standard' : slide.pointsMode;
 
   // Preserve option text when converting between quiz and poll
   if (

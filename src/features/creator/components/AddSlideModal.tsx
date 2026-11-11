@@ -32,14 +32,14 @@ interface SlideTypeCard {
   description: string;
   icon: ComponentType<{ className?: string }>;
   slideType?: SlideType;
-  releaseBadge?: 'R2' | 'R3';
+  releaseBadge?: 'R3';
 }
 
 const TEST_KNOWLEDGE_TYPES: SlideTypeCard[] = [
   {
     id: 'quiz',
     label: 'Quiz',
-    description: '2–6 answer options with 1+ correct',
+    description: '2–6 answer options (single or multi-select)',
     icon: ListChecks,
     slideType: 'quiz',
   },
@@ -55,21 +55,21 @@ const TEST_KNOWLEDGE_TYPES: SlideTypeCard[] = [
     label: 'Type answer',
     description: 'Short typed text match',
     icon: Type,
-    releaseBadge: 'R2',
+    slideType: 'type_answer',
   },
   {
     id: 'slider',
     label: 'Slider',
     description: 'Numeric range estimate',
     icon: Sliders,
-    releaseBadge: 'R2',
+    slideType: 'slider',
   },
   {
     id: 'puzzle',
     label: 'Puzzle',
     description: 'Order 4 items in sequence',
     icon: HelpCircle,
-    releaseBadge: 'R2',
+    slideType: 'puzzle',
   },
   {
     id: 'pin_answer',
@@ -93,28 +93,28 @@ const COLLECT_OPINIONS_TYPES: SlideTypeCard[] = [
     label: 'Scale',
     description: '1–5 rating scale',
     icon: Sliders,
-    releaseBadge: 'R2',
+    slideType: 'scale',
   },
   {
-    id: 'nps',
+    id: 'nps_scale',
     label: 'NPS scale',
     description: '0–10 net promoter score',
     icon: BarChart2,
-    releaseBadge: 'R2',
+    slideType: 'nps_scale',
   },
   {
     id: 'word_cloud',
     label: 'Word cloud',
     description: 'Short phrases word cloud',
     icon: Sparkles,
-    releaseBadge: 'R2',
+    slideType: 'word_cloud',
   },
   {
     id: 'open_ended',
     label: 'Open-ended',
     description: 'Free text up to 250 chars',
     icon: MessageSquare,
-    releaseBadge: 'R2',
+    slideType: 'open_ended',
   },
   {
     id: 'drop_pin',
@@ -145,42 +145,42 @@ const MEDIA_SLIDE_TYPES: SlideTypeCard[] = [
     label: 'Big title',
     description: 'Section title card',
     icon: Type,
-    releaseBadge: 'R2',
+    slideType: 'big_title',
   },
   {
     id: 'title_text',
     label: 'Title and text',
     description: 'Structured explanation',
     icon: FileText,
-    releaseBadge: 'R2',
+    slideType: 'title_text',
   },
   {
     id: 'bullet_points',
     label: 'Bullet points',
     description: 'Key takeaways list',
     icon: ListChecks,
-    releaseBadge: 'R2',
+    slideType: 'bullet_points',
   },
   {
     id: 'quote',
     label: 'Quote',
     description: 'Featured quote & author',
     icon: Quote,
-    releaseBadge: 'R2',
+    slideType: 'quote',
   },
   {
     id: 'big_media',
     label: 'Big media',
     description: 'Full-canvas visual',
     icon: ImageIcon,
-    releaseBadge: 'R2',
+    slideType: 'big_media',
   },
   {
     id: 'video',
     label: 'Video',
-    description: 'YouTube or URL embed',
+    description: 'YouTube or Vimeo embed',
     icon: Video,
-    releaseBadge: 'R2',
+    slideType: 'video',
   },
 ];
 
@@ -288,19 +288,19 @@ export function AddSlideModal({ open, onOpenChange, onSelectType }: AddSlideModa
           </TabsContent>
 
           <TabsContent value="find" className="py-8 text-center">
-            <p className="text-sm font-semibold text-slate-800">Question bank search (R2)</p>
+            <p className="text-sm font-semibold text-slate-800">Question bank search (Unit U7)</p>
             <p className="mt-1 text-xs text-slate-600">
-              Search and insert questions from public Eroot quizzes in Release 2 (Unit U7).
+              Search and insert questions from public Eroot quizzes in Unit U7.
             </p>
           </TabsContent>
 
           <TabsContent value="import" className="py-8 text-center">
             <UploadCloud className="mx-auto mb-2 h-8 w-8 text-slate-400" aria-hidden="true" />
             <p className="text-sm font-semibold text-slate-800">
-              Spreadsheet import (.xlsx / .csv) (R2)
+              Spreadsheet import (.xlsx / .csv) (Unit U7)
             </p>
             <p className="mt-1 text-xs text-slate-600">
-              Downloadable template and bulk question importer ship in Release 2 (Unit U7).
+              Downloadable template and bulk question importer arrive in Unit U7.
             </p>
           </TabsContent>
         </Tabs>
@@ -308,4 +308,3 @@ export function AddSlideModal({ open, onOpenChange, onSelectType }: AddSlideModa
     </Dialog>
   );
 }
-

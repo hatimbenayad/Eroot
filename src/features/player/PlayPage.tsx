@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { CheckCircle2, Flame, Loader2, Trophy, XCircle } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
-import { AnswerTile } from '@/components/eroot/AnswerTile';
 import { ErootLogo } from '@/components/eroot/ErootLogo';
 import { HostStageShell } from '@/components/eroot/HostStageShell';
 import { Alert } from '@/components/ui/alert';
@@ -13,10 +12,12 @@ import {
   submitPlayerAnswer,
   subscribeToGameChannel,
 } from '@/features/live/api';
+import { PlayerSlideInput, type PlayerAnswerPayload } from '@/features/player/PlayerSlideInput';
 import { clearPlayerSession, loadPlayerSession } from '@/features/player/session-storage';
 import { cn } from '@/lib/cn';
 import { getErootTheme } from '@shared/constants/themes';
 import type { PlayerQuestionFeedback, PublicGameSnapshot } from '@shared/schemas/game';
+import { isMediaSlideType, isOpinionSlideType } from '@shared/schemas/slide';
 
 export function PlayPage() {
   const { gameId } = useParams<{ gameId: string }>();
@@ -33,7 +34,7 @@ export function PlayPage() {
   const [kicked, setKicked] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [submittingOptionId, setSubmittingOptionId] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   const sessionToken = storedSession?.sessionToken ?? '';
   const playerId = storedSession?.playerId ?? '';
@@ -103,12 +104,12 @@ export function PlayPage() {
     };
   }, [gameId, sessionToken, playerId, kicked, reconcileSession]);
 
-  async function handleSelectOption(slideId: string, optionId: string) {
-    if (!gameId || !sessionToken || submittingOptionId || submittedSlides.has(slideId)) return;
-    setSubmittingOptionId(optionId);
+  async function handleSubmitAnswer(slideId: string, payload: PlayerAnswerPayload) {
+    if (!gameId || !sessionToken || submitting || submittedSlides.has(slideId)) return;
+    setSubmitting(true);
     setError(null);
     try {
-      await submitPlayerAnswer(sessionToken, { gameId, slideId, optionId });
+      await submitPlayerAnswer(sessionToken, { gameId, slideId, ...payload });
       setSubmittedSlides((prev) => new Set(prev).add(slideId));
     } catch (err) {
       if (err instanceof ApiError && err.code === 'ALREADY_ANSWERED') {
@@ -120,7 +121,7 @@ export function PlayPage() {
         setError(err instanceof Error ? err.message : 'Failed to submit answer.');
       }
     } finally {
-      setSubmittingOptionId(null);
+      setSubmitting(false);
     }
   }
 
@@ -242,7 +243,7 @@ export function PlayPage() {
 
         {game.state === 'question_active' && currentSlide && (
           <div className="space-y-4">
-            {currentSlide.type === 'classic' ? (
+            {isMediaSlideType(currentSlide.type) ? (
               <div className="rounded-3xl bg-white/10 p-8 text-center backdrop-blur-sm space-y-2">
                 <h1 className="font-display text-2xl font-bold">Look at the host screen</h1>
                 {game.settings.showQuestionOnDevices && (
@@ -273,19 +274,12 @@ export function PlayPage() {
                   </div>
                 )}
 
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  {currentSlide.options.map((opt, idx) => (
-                    <AnswerTile
-                      key={opt.id}
-                      index={idx}
-                      label={game.settings.showQuestionOnDevices ? opt.text : undefined}
-                      imageUrl={game.settings.showQuestionOnDevices ? opt.imageUrl : undefined}
-                      disabled={Boolean(submittingOptionId)}
-                      onClick={() => void handleSelectOption(currentSlide.id, opt.id)}
-                      className="min-h-[96px]"
-                    />
-                  ))}
-                </div>
+                <PlayerSlideInput
+                  slide={currentSlide}
+                  showQuestionOnDevices={game.settings.showQuestionOnDevices}
+                  submitting={submitting}
+                  onSubmit={(payload) => void handleSubmitAnswer(currentSlide.id, payload)}
+                />
               </>
             )}
           </div>
@@ -296,11 +290,11 @@ export function PlayPage() {
             data-testid="player-reveal-feedback"
             className="rounded-3xl bg-white p-7 text-center text-slate-900 shadow-2xl space-y-4"
           >
-            {currentSlide.type === 'poll' ? (
+            {isOpinionSlideType(currentSlide.type) ? (
               <>
                 <CheckCircle2 className="mx-auto h-12 w-12 text-indigo-600" aria-hidden="true" />
-                <h1 className="font-display text-2xl font-black">Vote recorded</h1>
-                <p className="text-sm text-slate-600">See live poll results on the host screen.</p>
+                <h1 className="font-display text-2xl font-black">Response recorded</h1>
+                <p className="text-sm text-slate-600">See live results on the host screen.</p>
               </>
             ) : feedback?.isCorrect ? (
               <>

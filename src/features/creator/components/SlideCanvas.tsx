@@ -1,5 +1,5 @@
 import { useRef, useState, type DragEvent } from 'react';
-import { Check, Plus, Trash2, Upload } from 'lucide-react';
+import { Check, ImagePlus, Plus, Trash2, Upload, X } from 'lucide-react';
 import { AnswerShapeIcon } from '@/components/eroot/AnswerShapeIcon';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,12 +9,12 @@ import { getAnswerTileTheme } from '@shared/constants/answer-tiles';
 import { getErootTheme } from '@shared/constants/themes';
 import {
   createSlideId,
-  type ClassicContent,
   type PollContent,
   type QuizContent,
   type SlideDraft,
 } from '@shared/schemas/slide';
 import type { SlideValidationResult } from '@shared/validation/quiz-validation';
+import { R2SlideEditor } from './R2SlideEditors';
 
 interface SlideCanvasProps {
   slide: SlideDraft;
@@ -45,6 +45,8 @@ export function SlideCanvas({
   const { t } = useTranslation();
   const theme = getErootTheme(themeId);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const answerFileInputRef = useRef<HTMLInputElement | null>(null);
+  const [answerUploadIdx, setAnswerUploadIdx] = useState<number | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [isDraggingFile, setIsDraggingFile] = useState(false);
@@ -63,12 +65,45 @@ export function SlideCanvas({
     }
   }
 
+  async function processAnswerImage(file: File | undefined, idx: number | null) {
+    if (!file || idx === null) return;
+    setUploadError(null);
+    try {
+      const publicUrl = await onUploadImage(file);
+      onUpdateSlide((s) => {
+        if (s.type === 'poll') {
+          const prev = (s.content as PollContent).options;
+          return {
+            ...s,
+            content: {
+              options: prev.map((o, i) => (i === idx ? { ...o, imageUrl: publicUrl } : o)),
+            },
+          };
+        }
+        const prev = (s.content as QuizContent).options;
+        return {
+          ...s,
+          content: {
+            options: prev.map((o, i) => (i === idx ? { ...o, imageUrl: publicUrl } : o)),
+          },
+        };
+      });
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : 'Failed to upload answer image.');
+    } finally {
+      setAnswerUploadIdx(null);
+    }
+  }
+
   function handleDrop(e: DragEvent<HTMLDivElement>) {
     e.preventDefault();
     setIsDraggingFile(false);
     const file = e.dataTransfer.files[0];
     void processFile(file);
   }
+
+  const isTileSlide =
+    slide.type === 'quiz' || slide.type === 'true_false' || slide.type === 'poll';
 
   const options =
     slide.type === 'quiz' || slide.type === 'true_false'
@@ -109,93 +144,96 @@ export function SlideCanvas({
           )}
         </div>
 
-        {/* Media Block */}
-        <div
-          onDragOver={(e) => {
-            e.preventDefault();
-            setIsDraggingFile(true);
-          }}
-          onDragLeave={() => setIsDraggingFile(false)}
-          onDrop={handleDrop}
-          className={cn(
-            'mx-auto flex w-full max-w-md flex-col items-center justify-center rounded-2xl border-2 border-dashed bg-white/90 p-6 text-center shadow-sm transition-colors',
-            isDraggingFile ? 'border-indigo-500 bg-indigo-50' : 'border-slate-300'
-          )}
-        >
-          {slide.mediaUrl ? (
-            <div className="space-y-3 w-full">
-              <img
-                src={slide.mediaUrl}
-                alt="Slide visual"
-                className="mx-auto max-h-56 rounded-xl object-contain"
-              />
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => onUpdateSlide((s) => ({ ...s, mediaUrl: null }))}
-              >
-                <Trash2 className="h-4 w-4" aria-hidden="true" />
-                {t('creator.removeMedia')}
-              </Button>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-indigo-50 text-indigo-600">
-                <Upload className="h-6 w-6" aria-hidden="true" />
+        {/* Media Block (hidden on video slide since video embeds directly) */}
+        {slide.type !== 'video' && (
+          <div
+            onDragOver={(e) => {
+              e.preventDefault();
+              setIsDraggingFile(true);
+            }}
+            onDragLeave={() => setIsDraggingFile(false)}
+            onDrop={handleDrop}
+            className={cn(
+              'mx-auto flex w-full max-w-md flex-col items-center justify-center rounded-2xl border-2 border-dashed bg-white/90 p-6 text-center shadow-sm transition-colors',
+              isDraggingFile ? 'border-indigo-500 bg-indigo-50' : 'border-slate-300'
+            )}
+          >
+            {slide.mediaUrl ? (
+              <div className="space-y-3 w-full">
+                <img
+                  src={slide.mediaUrl}
+                  alt="Slide visual"
+                  className={cn(
+                    'mx-auto max-h-56 rounded-xl object-contain transition-all',
+                    slide.mediaReveal && 'blur-[2px]'
+                  )}
+                />
+                {slide.mediaReveal && (
+                  <p className="text-xs font-medium text-indigo-700">
+                    Gradual reveal enabled during live play
+                  </p>
+                )}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    onUpdateSlide((s) => ({ ...s, mediaUrl: null, mediaReveal: false }))
+                  }
+                >
+                  <Trash2 className="h-4 w-4" aria-hidden="true" />
+                  {t('creator.removeMedia')}
+                </Button>
               </div>
-              <div>
-                <p className="text-sm font-semibold text-slate-900">
-                  {t('creator.mediaDropzoneTitle')}
-                </p>
-                <p className="text-xs text-slate-600">{t('creator.mediaDropzoneSubtitle')}</p>
+            ) : (
+              <div className="space-y-3">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-indigo-50 text-indigo-600">
+                  <Upload className="h-6 w-6" aria-hidden="true" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-slate-900">
+                    {t('creator.mediaDropzoneTitle')}
+                  </p>
+                  <p className="text-xs text-slate-600">{t('creator.mediaDropzoneSubtitle')}</p>
+                </div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp,image/gif"
+                  className="sr-only"
+                  onChange={(e) => void processFile(e.target.files?.[0])}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  loading={isUploading}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  Choose image
+                </Button>
+                {uploadError && (
+                  <p role="alert" className="text-xs font-medium text-red-600">
+                    {uploadError}
+                  </p>
+                )}
               </div>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/png,image/jpeg,image/webp,image/gif"
-                className="sr-only"
-                onChange={(e) => void processFile(e.target.files?.[0])}
-              />
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                loading={isUploading}
-                onClick={() => fileInputRef.current?.click()}
-              >
-                Choose image
-              </Button>
-              {uploadError && (
-                <p role="alert" className="text-xs font-medium text-red-600">
-                  {uploadError}
-                </p>
-              )}
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
+
+        {/* Hidden input for per-answer tile image upload */}
+        <input
+          ref={answerFileInputRef}
+          type="file"
+          accept="image/png,image/jpeg,image/webp,image/gif"
+          className="sr-only"
+          onChange={(e) => void processAnswerImage(e.target.files?.[0], answerUploadIdx)}
+        />
 
         {/* Slide Type Content Area */}
-        {slide.type === 'classic' ? (
-          <div className="rounded-2xl bg-white p-5 shadow-md space-y-2">
-            <label htmlFor="classic-body-input" className="text-sm font-semibold text-slate-800">
-              Slide text
-            </label>
-            <textarea
-              id="classic-body-input"
-              rows={4}
-              value={(slide.content as ClassicContent).body}
-              onChange={(e) =>
-                onUpdateSlide((s) => ({
-                  ...s,
-                  content: { body: e.target.value },
-                }))
-              }
-              placeholder="Write supporting explanation or context for participants..."
-              className="w-full rounded-lg border border-slate-300 p-3 text-sm text-slate-900 focus:border-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-            />
-            {validation?.bodyError && <PurpleTooltip message={validation.bodyError} />}
-          </div>
+        {!isTileSlide ? (
+          <R2SlideEditor slide={slide} validation={validation} onUpdateSlide={onUpdateSlide} />
         ) : (
           <div className="space-y-3">
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -210,34 +248,84 @@ export function SlideCanvas({
                   <div key={opt.id} className="space-y-1">
                     <div
                       className={cn(
-                        'flex items-center gap-2.5 rounded-xl border-b-4 p-3 shadow-sm',
+                        'flex flex-col gap-2 rounded-xl border-b-4 p-3 shadow-sm',
                         tileTheme.tileClasses
                       )}
                     >
-                      <span
-                        className={cn(
-                          'inline-flex shrink-0 items-center gap-1 rounded-lg px-2 py-1.5 font-bold',
-                          tileTheme.badgeBgClass
-                        )}
-                      >
-                        <AnswerShapeIcon shape={tileTheme.shape} className="h-5 w-5" />
-                        <span className="text-xs">{tileTheme.letter}</span>
-                      </span>
+                      {opt.imageUrl && (
+                        <div className="relative mx-auto">
+                          <img
+                            src={opt.imageUrl}
+                            alt={`Answer ${idx + 1} visual`}
+                            className="h-20 rounded-md bg-white/90 object-contain p-1"
+                          />
+                          <button
+                            type="button"
+                            aria-label={`Remove answer ${idx + 1} image`}
+                            onClick={() =>
+                              onUpdateSlide((s) => {
+                                if (s.type === 'poll') {
+                                  return {
+                                    ...s,
+                                    content: {
+                                      options: (s.content as PollContent).options.map((o, i) =>
+                                        i === idx ? { ...o, imageUrl: null } : o
+                                      ),
+                                    },
+                                  };
+                                }
+                                return {
+                                  ...s,
+                                  content: {
+                                    options: (s.content as QuizContent).options.map((o, i) =>
+                                      i === idx ? { ...o, imageUrl: null } : o
+                                    ),
+                                  },
+                                };
+                              })
+                            }
+                            className="absolute -right-2 -top-2 rounded-full bg-slate-900 p-1 text-white"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                      )}
 
-                      <input
-                        type="text"
-                        aria-label={`Answer ${idx + 1}`}
-                        readOnly={isTrueFalse}
-                        value={opt.text}
-                        placeholder={
-                          idx < 2
-                            ? t('creator.answerPlaceholder', { num: String(idx + 1) })
-                            : t('creator.optionalAnswerPlaceholder', { num: String(idx + 1) })
-                        }
-                        onChange={(e) =>
-                          onUpdateSlide((s) => {
-                            if (s.type === 'poll') {
-                              const prev = (s.content as PollContent).options;
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={cn(
+                            'inline-flex shrink-0 items-center gap-1 rounded-lg px-2 py-1.5 font-bold',
+                            tileTheme.badgeBgClass
+                          )}
+                        >
+                          <AnswerShapeIcon shape={tileTheme.shape} className="h-5 w-5" />
+                          <span className="text-xs">{tileTheme.letter}</span>
+                        </span>
+
+                        <input
+                          type="text"
+                          aria-label={`Answer ${idx + 1}`}
+                          readOnly={isTrueFalse}
+                          value={opt.text}
+                          placeholder={
+                            idx < 2
+                              ? t('creator.answerPlaceholder', { num: String(idx + 1) })
+                              : t('creator.optionalAnswerPlaceholder', { num: String(idx + 1) })
+                          }
+                          onChange={(e) =>
+                            onUpdateSlide((s) => {
+                              if (s.type === 'poll') {
+                                const prev = (s.content as PollContent).options;
+                                return {
+                                  ...s,
+                                  content: {
+                                    options: prev.map((o, i) =>
+                                      i === idx ? { ...o, text: e.target.value } : o
+                                    ),
+                                  },
+                                };
+                              }
+                              const prev = (s.content as QuizContent).options;
                               return {
                                 ...s,
                                 content: {
@@ -246,88 +334,93 @@ export function SlideCanvas({
                                   ),
                                 },
                               };
-                            }
-                            const prev = (s.content as QuizContent).options;
-                            return {
-                              ...s,
-                              content: {
-                                options: prev.map((o, i) =>
-                                  i === idx ? { ...o, text: e.target.value } : o
-                                ),
-                              },
-                            };
-                          })
-                        }
-                        className={cn(
-                          'min-w-0 flex-1 rounded-md bg-white/90 px-2.5 py-2 text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-950/30',
-                          isTrueFalse && 'cursor-default'
-                        )}
-                      />
-
-                      {isQuizOption && (
-                        <button
-                          type="button"
-                          aria-label={`Mark answer ${idx + 1} as correct`}
-                          aria-pressed={optIsCorrect}
-                          onClick={() =>
-                            onUpdateSlide((s) => {
-                              const prev = (s.content as QuizContent).options;
-                              return {
-                                ...s,
-                                content: {
-                                  options: prev.map((o, i) => {
-                                    if (s.type === 'true_false') {
-                                      return { ...o, isCorrect: i === idx };
-                                    }
-                                    return i === idx ? { ...o, isCorrect: !o.isCorrect } : o;
-                                  }),
-                                },
-                              };
                             })
                           }
                           className={cn(
-                            'inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 transition-colors',
-                            optIsCorrect
-                              ? 'border-white bg-emerald-500 text-white'
-                              : 'border-white/70 bg-black/20 text-white/70 hover:bg-black/35'
+                            'min-w-0 flex-1 rounded-md bg-white/90 px-2.5 py-2 text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-950/30',
+                            isTrueFalse && 'cursor-default'
                           )}
-                        >
-                          <Check className="h-4 w-4 stroke-[3]" aria-hidden="true" />
-                        </button>
-                      )}
+                        />
 
-                      {((slide.type === 'quiz' && options.length > 2) ||
-                        (slide.type === 'poll' && options.length > 2)) && (
-                        <button
-                          type="button"
-                          aria-label={`Remove answer ${idx + 1}`}
-                          onClick={() =>
-                            onUpdateSlide((s) => {
-                              if (s.type === 'poll') {
+                        {!isTrueFalse && (
+                          <button
+                            type="button"
+                            aria-label={`Upload image for answer ${idx + 1}`}
+                            onClick={() => {
+                              setAnswerUploadIdx(idx);
+                              answerFileInputRef.current?.click();
+                            }}
+                            className="rounded-md bg-black/20 p-1.5 text-white hover:bg-black/35"
+                          >
+                            <ImagePlus className="h-4 w-4" aria-hidden="true" />
+                          </button>
+                        )}
+
+                        {isQuizOption && (
+                          <button
+                            type="button"
+                            aria-label={`Mark answer ${idx + 1} as correct`}
+                            aria-pressed={optIsCorrect}
+                            onClick={() =>
+                              onUpdateSlide((s) => {
+                                const prev = (s.content as QuizContent).options;
                                 return {
                                   ...s,
                                   content: {
-                                    options: (s.content as PollContent).options.filter(
+                                    options: prev.map((o, i) => {
+                                      if (s.type === 'true_false') {
+                                        return { ...o, isCorrect: i === idx };
+                                      }
+                                      return i === idx ? { ...o, isCorrect: !o.isCorrect } : o;
+                                    }),
+                                  },
+                                };
+                              })
+                            }
+                            className={cn(
+                              'inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 transition-colors',
+                              optIsCorrect
+                                ? 'border-white bg-emerald-500 text-white'
+                                : 'border-white/70 bg-black/20 text-white/70 hover:bg-black/35'
+                            )}
+                          >
+                            <Check className="h-4 w-4 stroke-[3]" aria-hidden="true" />
+                          </button>
+                        )}
+
+                        {((slide.type === 'quiz' && options.length > 2) ||
+                          (slide.type === 'poll' && options.length > 2)) && (
+                          <button
+                            type="button"
+                            aria-label={`Remove answer ${idx + 1}`}
+                            onClick={() =>
+                              onUpdateSlide((s) => {
+                                if (s.type === 'poll') {
+                                  return {
+                                    ...s,
+                                    content: {
+                                      options: (s.content as PollContent).options.filter(
+                                        (_, i) => i !== idx
+                                      ),
+                                    },
+                                  };
+                                }
+                                return {
+                                  ...s,
+                                  content: {
+                                    options: (s.content as QuizContent).options.filter(
                                       (_, i) => i !== idx
                                     ),
                                   },
                                 };
-                              }
-                              return {
-                                ...s,
-                                content: {
-                                  options: (s.content as QuizContent).options.filter(
-                                    (_, i) => i !== idx
-                                  ),
-                                },
-                              };
-                            })
-                          }
-                          className="rounded-md p-1.5 bg-black/20 text-white hover:bg-black/35"
-                        >
-                          <Trash2 className="h-4 w-4" aria-hidden="true" />
-                        </button>
-                      )}
+                              })
+                            }
+                            className="rounded-md bg-black/20 p-1.5 text-white hover:bg-black/35"
+                          >
+                            <Trash2 className="h-4 w-4" aria-hidden="true" />
+                          </button>
+                        )}
+                      </div>
                     </div>
 
                     {optErr && <PurpleTooltip message={optErr} />}

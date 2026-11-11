@@ -142,7 +142,15 @@ export async function advanceGameState(
 
 export async function submitPlayerAnswer(
   playerToken: string,
-  payload: { gameId: string; slideId: string; optionId: string }
+  payload: {
+    gameId: string;
+    slideId: string;
+    optionId?: string;
+    optionIds?: string[];
+    text?: string;
+    value?: number;
+    order?: string[];
+  }
 ): Promise<{ accepted: boolean; slideId: string }> {
   const res = await fetch('/api/games/answer', {
     method: 'POST',

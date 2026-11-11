@@ -536,7 +536,7 @@ test('U4 full live game loop: host + 2 mobile players, kick, reconnect, reveal, 
   await p2Page.getByTestId('answer-tile-B').click();
 
   await hostPage.getByRole('button', { name: /End question early/i }).click();
-  await expect(p1Page.getByText('Vote recorded')).toBeVisible();
+  await expect(p1Page.getByText('Response recorded')).toBeVisible();
 
   await hostPage.getByRole('button', { name: /Next/i }).click();
   await expect(hostPage.getByTestId('podium-stage')).toBeVisible();

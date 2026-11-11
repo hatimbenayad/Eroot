@@ -14,12 +14,12 @@ import {
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { Link, useParams } from 'react-router-dom';
-import { AnswerTile } from '@/components/eroot/AnswerTile';
 import { ErootLogo } from '@/components/eroot/ErootLogo';
 import { HostStageShell } from '@/components/eroot/HostStageShell';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/features/auth/useAuth';
+import { HostActiveSlideView, HostRevealSlideView } from '@/features/host/HostSlideViews';
 import {
   advanceGameState,
   fetchHostGameSession,
@@ -28,9 +28,9 @@ import {
 } from '@/features/live/api';
 import { erootAudio } from '@/lib/audio';
 import { cn } from '@/lib/cn';
-import { getAnswerTileTheme } from '@shared/constants/answer-tiles';
 import { getErootTheme } from '@shared/constants/themes';
 import type { LobbyPlayerSummary, PublicGameSnapshot } from '@shared/schemas/game';
+import { isMediaSlideType } from '@shared/schemas/slide';
 import type { GameAction } from '@shared/state-machine/game-state';
 
 export function HostGamePage() {
@@ -45,6 +45,7 @@ export function HostGamePage() {
   const [copiedPin, setCopiedPin] = useState(false);
   const [muted, setMuted] = useState(false);
   const [remainingSec, setRemainingSec] = useState<number>(20);
+  const [revealProgress, setRevealProgress] = useState<number>(1);
   const [podiumRunKey, setPodiumRunKey] = useState(0);
   const [busyAction, setBusyAction] = useState(false);
 
@@ -148,7 +149,7 @@ export function HostGamePage() {
   useEffect(() => {
     if (!game || game.state !== 'question_active') return;
     const slide = game.slides[game.currentSlideIndex];
-    if (!slide || slide.type === 'classic') return;
+    if (!slide || isMediaSlideType(slide.type)) return;
 
     const startMs = game.questionStartedAt ? Date.parse(game.questionStartedAt) : Date.now();
     const totalMs = slide.timeLimit * 1000;
@@ -157,6 +158,7 @@ export function HostGamePage() {
       const elapsed = Date.now() - startMs;
       const left = Math.max(0, Math.ceil((totalMs - elapsed) / 1000));
       setRemainingSec(left);
+      setRevealProgress(Math.min(1, Math.max(0, elapsed / totalMs)));
       if (elapsed >= totalMs) {
         void handleAction('reveal');
       }
@@ -379,7 +381,7 @@ export function HostGamePage() {
         {game.state === 'question_active' && currentSlide && (
           <div className="space-y-6">
             <div className="flex items-center justify-between gap-4">
-              {currentSlide.type === 'classic' ? (
+              {isMediaSlideType(currentSlide.type) ? (
                 <span className="rounded-full bg-white/15 px-4 py-1.5 text-sm font-bold">
                   Info Slide
                 </span>
@@ -401,7 +403,7 @@ export function HostGamePage() {
               )}
 
               <div className="flex items-center gap-2">
-                {currentSlide.type === 'classic' ? (
+                {isMediaSlideType(currentSlide.type) ? (
                   <Button
                     type="button"
                     variant="stage"
@@ -422,41 +424,7 @@ export function HostGamePage() {
               </div>
             </div>
 
-            <div className="rounded-3xl bg-white p-6 text-center text-slate-900 shadow-xl">
-              <h1 className="font-display text-2xl font-extrabold sm:text-4xl">
-                {currentSlide.title}
-              </h1>
-            </div>
-
-            {currentSlide.mediaUrl && (
-              <div className="flex justify-center">
-                <img
-                  src={currentSlide.mediaUrl}
-                  alt="Question visual"
-                  className="max-h-64 rounded-2xl bg-white/10 object-contain p-1"
-                />
-              </div>
-            )}
-
-            {currentSlide.type === 'classic' ? (
-              <div className="rounded-3xl bg-white/95 p-8 text-center text-slate-800 shadow-lg">
-                <p className="whitespace-pre-line text-xl leading-relaxed">
-                  {currentSlide.body}
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {currentSlide.options.map((opt, idx) => (
-                  <AnswerTile
-                    key={opt.id}
-                    index={idx}
-                    label={opt.text}
-                    imageUrl={opt.imageUrl}
-                    interactive={false}
-                  />
-                ))}
-              </div>
-            )}
+            <HostActiveSlideView slide={currentSlide} revealProgress={revealProgress} />
           </div>
         )}
 
@@ -472,58 +440,7 @@ export function HostGamePage() {
               </Button>
             </div>
 
-            {/* Answer Distribution Bar Chart */}
-            <div className="rounded-3xl bg-white/10 p-6 backdrop-blur-sm space-y-4">
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                {currentSlide.options.map((opt, idx) => {
-                  const tileTheme = getAnswerTileTheme(idx);
-                  const count = game.revealPayload?.optionCounts[opt.id] ?? 0;
-                  const total = Math.max(1, game.revealPayload?.totalAnswers ?? 0);
-                  const pct = Math.round((count / total) * 100);
-                  const isCorrect =
-                    currentSlide.type !== 'poll' &&
-                    Boolean(game.revealPayload?.correctOptionIds.includes(opt.id));
-
-                  return (
-                    <div key={opt.id} className="flex flex-col items-center gap-2">
-                      <span className="text-sm font-extrabold">
-                        {count} ({pct}%)
-                      </span>
-                      <div className="flex h-32 w-full items-end rounded-xl bg-black/25 p-1.5">
-                        <div
-                          style={{
-                            height: `${Math.max(8, pct)}%`,
-                            backgroundColor: tileTheme.bgHex,
-                          }}
-                          className={cn(
-                            'w-full rounded-lg transition-all duration-500',
-                            isCorrect && 'ring-2 ring-white'
-                          )}
-                        />
-                      </div>
-                      <span className="text-xs font-bold uppercase">{tileTheme.letter}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              {currentSlide.options.map((opt, idx) => (
-                <AnswerTile
-                  key={opt.id}
-                  index={idx}
-                  label={opt.text}
-                  interactive={false}
-                  revealed={currentSlide.type !== 'poll'}
-                  isCorrect={
-                    currentSlide.type === 'poll'
-                      ? undefined
-                      : game.revealPayload?.correctOptionIds.includes(opt.id)
-                  }
-                />
-              ))}
-            </div>
+            <HostRevealSlideView slide={currentSlide} reveal={game.revealPayload} />
           </div>
         )}
 

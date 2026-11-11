@@ -68,13 +68,13 @@
 
 ### Milestone: R2 (`v0.2.0`)
 
-#### Epic #32 — `[U5] Question Types R2 & Google OAuth` (`type:epic`, `unit:U5`, `priority:p1`)
-- **Story #33:** `As a host, I can sign in with Google and use all R2 question, opinion, and media slide types` (`US-007`, `unit:U5`, `area:creator`)
-  - **Task #34:** `feat(u5): integrate Google OAuth provider in Supabase Auth and /auth UI`
-  - **Task #35:** `feat(u5): implement Multi-select Quiz mode (proportional score, 0 on any wrong pick)`
-  - **Task #36:** `feat(u5): implement Type answer, Slider, and Puzzle schemas, editors, host & player UIs, and server scoring`
-  - **Task #37:** `feat(u5): implement Scale, NPS scale, Word cloud, and Open-ended opinion types & live host visualizations`
-  - **Task #38:** `feat(u5): implement 6 R2 Media slides (Big title, Title+text, Bullets, Quote, Big media, Video) + per-answer images + image reveal`
+#### Epic #32 — `[U5] Question Types R2 & Google OAuth` (`type:epic`, `unit:U5`, `priority:p1`) — **DONE**
+- [x] **Story #33:** `As a host, I can sign in with Google and use all R2 question, opinion, and media slide types` (`US-007`, `unit:U5`, `area:creator`)
+  - [x] **Task #34:** `feat(u5): integrate Google OAuth provider in Supabase Auth and /auth UI`
+  - [x] **Task #35:** `feat(u5): implement Multi-select Quiz mode (proportional score, 0 on any wrong pick)`
+  - [x] **Task #36:** `feat(u5): implement Type answer, Slider, and Puzzle schemas, editors, host & player UIs, and server scoring`
+  - [x] **Task #37:** `feat(u5): implement Scale, NPS scale, Word cloud, and Open-ended opinion types & live host visualizations`
+  - [x] **Task #38:** `feat(u5): implement 6 R2 Media slides (Big title, Title+text, Bullets, Quote, Big media, Video) + per-answer images + image reveal`
 
 #### Epic #39 — `[U6] Reports & Export` (`type:epic`, `unit:U6`, `priority:p1`)
 - **Story #40:** `As a host, I can browse reports, inspect players/questions, export xlsx/csv, and clone difficult questions` (`US-008`, `unit:U6`, `area:reports`)
