@@ -37,14 +37,14 @@
   - [x] **Task #6:** `feat(u1): implement email/password Auth flow, protected route guards, and /api/health endpoint`
   - [x] **Task #7:** `chore(u1): configure Vercel deployment (vercel.json, .env.example) and CI lint/typecheck/unit checks`
 
-#### Epic #8 — `[U2] Creator Core` (`type:epic`, `unit:U2`, `priority:p0`)
-- **Story #9:** `As a creator, I can build, reorder, theme, upload images, preview, and autosave quizzes` (`US-002`, `unit:U2`, `area:creator`)
-- **Story #10:** `As a creator, I see inline validation tooltips and cannot host/publish invalid quizzes` (`US-003`, `unit:U2`, `area:creator`)
-  - **Task #11:** `feat(u2): build three-pane Creator shell (top bar, slide list, canvas, inspector/themes + help modal)`
-  - **Task #12:** `feat(u2): implement quiz/slide CRUD, debounced draft autosave, and Settings dialog`
-  - **Task #13:** `feat(u2): add dnd-kit drag-and-drop and keyboard slide reordering plus duplicate/delete`
-  - **Task #14:** `feat(u2): add Zod inline slide validation, purple tooltip callouts, and invalid "!" badges`
-  - **Task #15:** `feat(u2): implement Supabase Storage question image upload, ~8 Eroot themes, and Creator Preview mode`
+#### Epic #8 — `[U2] Creator Core` (`type:epic`, `unit:U2`, `priority:p0`) — **DONE**
+- [x] **Story #9:** `As a creator, I can build, reorder, theme, upload images, preview, and autosave quizzes` (`US-002`, `unit:U2`, `area:creator`)
+- [x] **Story #10:** `As a creator, I see inline validation tooltips and cannot host/publish invalid quizzes` (`US-003`, `unit:U2`, `area:creator`)
+  - [x] **Task #11:** `feat(u2): build three-pane Creator shell (top bar, slide list, canvas, inspector/themes + help modal)`
+  - [x] **Task #12:** `feat(u2): implement quiz/slide CRUD, debounced draft autosave, and Settings dialog`
+  - [x] **Task #13:** `feat(u2): add dnd-kit drag-and-drop and keyboard slide reordering plus duplicate/delete`
+  - [x] **Task #14:** `feat(u2): add Zod inline slide validation, purple tooltip callouts, and invalid "!" badges`
+  - [x] **Task #15:** `feat(u2): implement Supabase Storage question image upload, ~8 Eroot themes, and Creator Preview mode`
 
 #### Epic #16 — `[U3] Question Types R1` (`type:epic`, `unit:U3`, `priority:p0`)
 - **Story #17:** `As a creator, I can author Quiz (2-6 options), True or False, Poll, and Classic slides` (`US-004`, `unit:U3`, `area:creator`)

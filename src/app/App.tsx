@@ -8,6 +8,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { AuthPage } from '@/features/auth/AuthPage';
 import { AuthProvider } from '@/features/auth/AuthProvider';
 import { RequireAuth } from '@/features/auth/RequireAuth';
+import { CreatorPage } from '@/features/creator/CreatorPage';
 import { JoinPage } from '@/features/join/JoinPage';
 import { LandingPage } from '@/features/landing/LandingPage';
 import { LibraryPage } from '@/features/library/LibraryPage';
@@ -52,6 +53,7 @@ export function App() {
                   <Route path="/join" element={<JoinPage />} />
 
                   <Route element={<RequireAuth />}>
+                    <Route path="/creator/:quizId" element={<CreatorPage />} />
                     <Route element={<HostAppShell />}>
                       <Route path="/library" element={<LibraryPage />} />
                       <Route path="/reports" element={<ReportsPage />} />
