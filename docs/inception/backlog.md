@@ -52,17 +52,17 @@
   - [x] **Task #19:** `feat(u3): build Add-slide modal (Add tab groups) and type-switching logic preserving compatible fields`
   - [x] **Task #20:** `feat(u3): implement Quiz (up to 6 tiles, multi-correct), True/False, Poll, and Classic editors & preview renderers`
 
-#### Epic #21 — `[U4] Live Game Engine` (`type:epic`, `unit:U4`, `priority:p0`)
-- **Story #22:** `As a host, I can launch a game with options, PIN/QR lobby, immutable snapshot, and kick control` (`US-005`, `unit:U4`, `area:host`)
-- **Story #23:** `As a host, I can run live questions, reveal distributions, Top-5 scoreboard, and podium replay` (`US-006`, `unit:U4`, `area:host`)
-- **Story #24:** `As a player, I can join anonymously on mobile via PIN + nickname without an account` (`US-012`, `unit:U4`, `area:player`)
-- **Story #25:** `As a player, I can answer via geometric tiles, see feedback/visual streaks, and reconnect` (`US-013`, `unit:U4`, `area:player`)
-  - **Task #26:** `feat(u4): build pure TypeScript scoring engine + game state machine with exhaustive Vitest unit tests`
-  - **Task #27:** `feat(u4): create live game Postgres schema/RPCs (games, players, answers, quiz_snapshot, report stub) & rate limiting`
-  - **Task #28:** `feat(u4): implement Vercel Functions (/api/games/create, join, state, answer, kick, end) with server timestamps`
-  - **Task #29:** `feat(u4): build Host Game Options modal, Lobby (PIN, QR, player roster, kick, Web Audio music) & Question/Reveal/Scoreboard/Podium screens`
-  - **Task #30:** `feat(u4): build mobile-first Player screens (/join, /play/:id, geometric answer tiles, feedback, visual streak, localStorage reconnect)`
-  - **Task #31:** `test(u4): add Playwright E2E full live game test (host + 2 players) and mobile viewport verification`
+#### Epic #21 — `[U4] Live Game Engine` (`type:epic`, `unit:U4`, `priority:p0`) — **DONE**
+- [x] **Story #22:** `As a host, I can launch a game with options, PIN/QR lobby, immutable snapshot, and kick control` (`US-005`, `unit:U4`, `area:host`)
+- [x] **Story #23:** `As a host, I can run live questions, reveal distributions, Top-5 scoreboard, and podium replay` (`US-006`, `unit:U4`, `area:host`)
+- [x] **Story #24:** `As a player, I can join anonymously on mobile via PIN + nickname without an account` (`US-012`, `unit:U4`, `area:player`)
+- [x] **Story #25:** `As a player, I can answer via geometric tiles, see feedback/visual streaks, and reconnect` (`US-013`, `unit:U4`, `area:player`)
+  - [x] **Task #26:** `feat(u4): build pure TypeScript scoring engine + game state machine with exhaustive Vitest unit tests`
+  - [x] **Task #27:** `feat(u4): create live game Postgres schema/RPCs (games, players, answers, quiz_snapshot, report stub) & rate limiting`
+  - [x] **Task #28:** `feat(u4): implement Vercel Functions (/api/games/create, lookup, join, session, state, answer, kick) with server timestamps`
+  - [x] **Task #29:** `feat(u4): build Host Game Options modal, Lobby (PIN, QR, player roster, kick, Web Audio music) & Question/Reveal/Scoreboard/Podium screens`
+  - [x] **Task #30:** `feat(u4): build mobile-first Player screens (/join, /play/:id, geometric answer tiles, feedback, visual streak, localStorage reconnect)`
+  - [x] **Task #31:** `test(u4): add Playwright E2E full live game test (host + 2 players) and mobile viewport verification`
 
 ---
 

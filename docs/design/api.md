@@ -37,8 +37,9 @@ All privileged game operations and operational checks live under `/api/*`. JSON 
 
 ## 2. Planned Endpoints by Unit (Specified in Detail per Unit Spec)
 
-- **U4 (Live Game Engine):**
+- **U4 (Live Game Engine — Implemented):**
   - `POST /api/games/create` (Host JWT) — validates quiz, freezes `game_snapshots` & `public_slides`, generates 7-digit PIN.
+  - `GET /api/games/lookup?pin=...` (Public, rate-limited) — validates PIN and returns join prompt metadata (`quizTitle`, `requirePlayerIdentifier`, `friendlyNicknames`).
   - `POST /api/games/join` (Public, rate-limited) — validates PIN, checks `max_players` (`100` default), runs nickname profanity filter or friendly generator, returns `playerId`, `sessionToken`, `gameId`, and current sanitized game state.
   - `GET /api/games/session` (Player `sessionToken` or Host JWT) — resumes player/host state on browser reload.
   - `POST /api/games/state` (Host JWT) — transitions game state (`lobby -> question_intro -> question_active -> question_reveal -> scoreboard -> podium -> ended`), stamps server `question_started_at`, broadcasts sanitized payload on Supabase Realtime, writes report on `ended`.

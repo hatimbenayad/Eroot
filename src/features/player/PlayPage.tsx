@@ -132,20 +132,6 @@ export function PlayPage() {
     );
   }
 
-  if (!storedSession) {
-    return (
-      <HostStageShell className="flex flex-col items-center justify-center gap-4 px-4 text-center">
-        <ErootLogo variant="dark" size="lg" />
-        <Alert variant="error" title="No active player session" className="max-w-sm">
-          Join with a Game PIN first to enter this game.
-        </Alert>
-        <Button asChild variant="stage">
-          <Link to="/join">Go to Join</Link>
-        </Button>
-      </HostStageShell>
-    );
-  }
-
   if (kicked) {
     return (
       <HostStageShell className="flex flex-col items-center justify-center gap-4 px-4 text-center">
@@ -162,6 +148,20 @@ export function PlayPage() {
             </Button>
           </CardContent>
         </Card>
+      </HostStageShell>
+    );
+  }
+
+  if (!storedSession) {
+    return (
+      <HostStageShell className="flex flex-col items-center justify-center gap-4 px-4 text-center">
+        <ErootLogo variant="dark" size="lg" />
+        <Alert variant="error" title="No active player session" className="max-w-sm">
+          Join with a Game PIN first to enter this game.
+        </Alert>
+        <Button asChild variant="stage">
+          <Link to="/join">Go to Join</Link>
+        </Button>
       </HostStageShell>
     );
   }

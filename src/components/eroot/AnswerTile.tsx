@@ -1,7 +1,6 @@
 import { Check, X } from 'lucide-react';
 import { getAnswerTileTheme } from '@shared/constants/answer-tiles';
 import { cn } from '@/lib/cn';
-import { useTranslation } from '@/i18n/useTranslation';
 import { AnswerShapeIcon } from './AnswerShapeIcon';
 
 export interface AnswerTileProps {
@@ -31,14 +30,8 @@ export function AnswerTile({
   onClick,
   className,
 }: AnswerTileProps) {
-  const { t } = useTranslation();
   const theme = getAnswerTileTheme(index);
-  const displayLabel = label?.trim() || `Option ${theme.letter}`;
-  const ariaLabel = t('tiles.optionLabel', {
-    letter: theme.letter,
-    shape: theme.shape,
-    text: displayLabel,
-  });
+  const trimmedLabel = label?.trim();
 
   const revealStyles = revealed
     ? isCorrect
@@ -57,7 +50,9 @@ export function AnswerTile({
         )}
       >
         <AnswerShapeIcon shape={theme.shape} className={compact ? 'h-4 w-4' : 'h-5 w-5'} />
+        <span className="sr-only">Option </span>
         <span className="text-xs font-extrabold">{theme.letter}</span>
+        <span className="sr-only"> ({theme.shape}): </span>
       </span>
 
       <span className="flex-1 text-left font-bold leading-snug break-words">
@@ -68,7 +63,11 @@ export function AnswerTile({
             className="mb-1.5 max-h-20 w-auto rounded-md object-contain bg-white/80 p-1"
           />
         )}
-        {label ? <span>{label}</span> : <span className="sr-only">{ariaLabel}</span>}
+        {trimmedLabel ? (
+          <span>{trimmedLabel}</span>
+        ) : (
+          <span className="sr-only">{`Option ${theme.letter}`}</span>
+        )}
       </span>
 
       {revealed && typeof isCorrect === 'boolean' && (
@@ -100,7 +99,6 @@ export function AnswerTile({
       <div
         data-testid={`answer-tile-${theme.letter}`}
         data-shape={theme.shape}
-        aria-label={ariaLabel}
         className={sharedClasses}
       >
         {content}
@@ -113,7 +111,6 @@ export function AnswerTile({
       type="button"
       data-testid={`answer-tile-${theme.letter}`}
       data-shape={theme.shape}
-      aria-label={ariaLabel}
       aria-pressed={selected || undefined}
       disabled={disabled}
       onClick={onClick}

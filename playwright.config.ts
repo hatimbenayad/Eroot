@@ -18,10 +18,13 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'npm run preview -- --port 4173 --host 127.0.0.1',
+    command: 'npx vite --port 4173 --host 127.0.0.1',
     url: 'http://127.0.0.1:4173',
     reuseExistingServer: !process.env.CI,
     timeout: 60000,
+    env: {
+      VITE_SUPABASE_URL: process.env.VITE_SUPABASE_URL || 'https://e2e-mock.supabase.co',
+      VITE_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY || 'e2e-mock-anon-key',
+    },
   },
 });
-
