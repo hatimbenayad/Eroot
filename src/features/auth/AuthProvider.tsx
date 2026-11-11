@@ -74,6 +74,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }
 
+  async function signInWithGoogle(redirectPath = '/library'): Promise<AuthActionResult> {
+    const supabase = getSupabaseClient();
+    if (!supabase) {
+      return { error: 'Supabase environment variables are not configured.' };
+    }
+    const safePath =
+      redirectPath.startsWith('/') && !redirectPath.startsWith('//') ? redirectPath : '/library';
+    const redirectTo = `${window.location.origin}${safePath}`;
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo },
+    });
+    return { error: error ? error.message : null };
+  }
+
   async function signOut(): Promise<void> {
     const supabase = getSupabaseClient();
     if (!supabase) return;
@@ -89,6 +104,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isConfigured: isSupabaseConfigured,
         signIn,
         signUp,
+        signInWithGoogle,
         signOut,
       }}
     >

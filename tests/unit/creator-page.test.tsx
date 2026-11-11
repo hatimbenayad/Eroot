@@ -42,6 +42,7 @@ function renderCreator() {
         isConfigured: true,
         signIn: async () => ({ error: null }),
         signUp: async () => ({ error: null }),
+        signInWithGoogle: async () => ({ error: null }),
         signOut: async () => {},
       }}
     >

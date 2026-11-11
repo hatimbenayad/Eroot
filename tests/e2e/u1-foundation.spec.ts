@@ -15,8 +15,8 @@ test.describe('U1 Foundation, Auth & Accessibility', () => {
     await expect(page).toHaveURL(/\/auth\?redirect=%2Flibrary/);
     await expect(page.getByRole('heading', { name: /Host Account/i })).toBeVisible();
 
-    // No Google OAuth in R1, no AI/paywall elements
-    await expect(page.getByText(/Continue with Google/i)).toHaveCount(0);
+    // Google OAuth ships in R2; zero Upgrade/paywall banners
+    await expect(page.getByRole('button', { name: /Continue with Google/i })).toBeVisible();
     await expect(page.getByText(/Upgrade/i)).toHaveCount(0);
   });
 
