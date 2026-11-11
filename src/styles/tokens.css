@@ -1,0 +1,19 @@
+:root {
+  --eroot-bg: #f8fafc;
+  --eroot-surface: #ffffff;
+  --eroot-border: #e2e8f0;
+  --eroot-text: #0f172a;
+  --eroot-muted: #475569;
+
+  --eroot-primary: #4f46e5;
+  --eroot-primary-hover: #4338ca;
+  --eroot-validation: #7c3aed;
+
+  --eroot-stage-from: #0f172a;
+  --eroot-stage-to: #1e1b4b;
+}
+
+.eroot-stage-bg {
+  background: radial-gradient(circle at top right, #312e81 0%, #1e1b4b 45%, #0f172a 100%);
+}
+

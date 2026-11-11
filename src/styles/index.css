@@ -1,4 +1,17 @@
+@import './tokens.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  body {
+    background-color: var(--eroot-bg);
+    color: var(--eroot-text);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--eroot-primary);
+    outline-offset: 2px;
+  }
+}
