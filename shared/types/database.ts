@@ -54,3 +54,4 @@ export interface MediaAssetRow {
   size_bytes: number;
   created_at: string;
 }
+
