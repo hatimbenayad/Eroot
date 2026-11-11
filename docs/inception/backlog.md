@@ -76,12 +76,12 @@
   - [x] **Task #37:** `feat(u5): implement Scale, NPS scale, Word cloud, and Open-ended opinion types & live host visualizations`
   - [x] **Task #38:** `feat(u5): implement 6 R2 Media slides (Big title, Title+text, Bullets, Quote, Big media, Video) + per-answer images + image reveal`
 
-#### Epic #39 — `[U6] Reports & Export` (`type:epic`, `unit:U6`, `priority:p1`)
-- **Story #40:** `As a host, I can browse reports, inspect players/questions, export xlsx/csv, and clone difficult questions` (`US-008`, `unit:U6`, `area:reports`)
-  - **Task #41:** `feat(u6): build Reports list page (search, filter by mode/date, sort, rename, delete)`
-  - **Task #42:** `feat(u6): build Report Summary, Players, Questions tabs (<35% difficult, needs-help, unfinished, podium replay)`
-  - **Task #43:** `feat(u6): implement .xlsx and .csv report export with formula-injection escaping`
-  - **Task #44:** `feat(u6): implement Play Again and non-AI difficult-questions (>=3) quiz generator`
+#### Epic #39 — `[U6] Reports & Export` (`type:epic`, `unit:U6`, `priority:p1`) — **DONE**
+- [x] **Story #40:** `As a host, I can browse reports, inspect players/questions, export xlsx/csv, and clone difficult questions` (`US-008`, `unit:U6`, `area:reports`)
+  - [x] **Task #41:** `feat(u6): build Reports list page (search, filter by mode/date, sort, rename, delete)`
+  - [x] **Task #42:** `feat(u6): build Report Summary, Players, Questions tabs (<35% difficult, needs-help, unfinished, podium replay)`
+  - [x] **Task #43:** `feat(u6): implement .xlsx and .csv report export with formula-injection escaping`
+  - [x] **Task #44:** `feat(u6): implement Play Again and non-AI difficult-questions (>=3) quiz generator`
 
 #### Epic #45 — `[U7] Library, Discover, Templates & Import` (`type:epic`, `unit:U7`, `priority:p1`)
 - **Story #46:** `As a creator, I can organize Library folders, discover/clone quizzes, use 5 templates, Find questions, and import spreadsheets` (`US-009`, `unit:U7`, `area:creator`)

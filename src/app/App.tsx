@@ -14,6 +14,7 @@ import { LandingPage } from '@/features/landing/LandingPage';
 import { LibraryPage } from '@/features/library/LibraryPage';
 import { JoinPage } from '@/features/player/JoinPage';
 import { PlayPage } from '@/features/player/PlayPage';
+import { ReportDetailPage } from '@/features/reports/ReportDetailPage';
 import { ReportsPage } from '@/features/reports/ReportsPage';
 import { I18nProvider } from '@/i18n/I18nProvider';
 
@@ -61,6 +62,7 @@ export function App() {
                     <Route element={<HostAppShell />}>
                       <Route path="/library" element={<LibraryPage />} />
                       <Route path="/reports" element={<ReportsPage />} />
+                      <Route path="/reports/:reportId" element={<ReportDetailPage />} />
                     </Route>
                   </Route>
 
