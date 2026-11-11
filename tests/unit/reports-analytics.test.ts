@@ -80,3 +80,4 @@ describe('Report Analytics (U6)', () => {
     expect(report.difficultQuestions).toEqual([]);
   });
 });
+

@@ -5,7 +5,9 @@ import {
   computeScoreboard,
   type DbGameRow,
   type DbPlayerRow,
+  type DbTeamRow,
 } from '../_lib/game-helpers';
+import type { TeamAnswerRef } from '../../shared/scoring/team';
 import { getAdminClient, requireHostUser, sendError } from '../_lib/supabase-admin';
 
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
@@ -54,7 +56,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     answerCount = count ?? 0;
   }
 
-  const publicGame = buildPublicGamePayload(game, activePlayers, answerCount);
+  let teams: DbTeamRow[] | undefined;
+  let teamAnswers: TeamAnswerRef[] | undefined;
+  if (game.mode === 'team') {
+    const [{ data: teamRows }, { data: ansRows }] = await Promise.all([
+      supabase.from('teams').select('*').eq('game_id', gameId).order('position', { ascending: true }),
+      supabase.from('answers').select('player_id, slide_id, points').eq('game_id', gameId),
+    ]);
+    teams = (teamRows ?? []) as DbTeamRow[];
+    teamAnswers = (ansRows ?? []) as TeamAnswerRef[];
+  }
+
+  const publicGame = buildPublicGamePayload(game, activePlayers, answerCount, {
+    teams,
+    answers: teamAnswers,
+  });
 
   // Check if host
   const hostUser = await requireHostUser(req, supabase);
@@ -62,7 +78,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     res.status(200).json({
       role: 'host',
       game: publicGame,
-      roster: activePlayers.map((p) => ({ id: p.id, nickname: p.nickname })),
+      roster: activePlayers.map((p) => ({
+        id: p.id,
+        nickname: p.nickname,
+        teamId: p.team_id ?? null,
+      })),
     });
     return;
   }
@@ -145,6 +165,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     player: {
       id: player.id,
       nickname: player.nickname,
+      teamId: player.team_id ?? null,
       totalScore: player.total_score,
       streak: player.streak,
       rank,

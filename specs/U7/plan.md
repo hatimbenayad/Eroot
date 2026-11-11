@@ -12,3 +12,4 @@
    - Upgrade `src/features/creator/components/AddSlideModal.tsx` and `CreatorPage.tsx` (`onInsertSlides(slides: SlideDraft[])` in `useCreatorStore`) so both `Find` question insertion and `.xlsx`/`.csv` import append cleanly to the current quiz!
 5. **Tests:**
    - Vitest unit tests for `shared/import/spreadsheet.ts` (`.csv` & `.xlsx` round-trip, row validation errors, formula/length bounds), starter templates validity (`validateQuiz` passes on all 5!), and `AddSlideModal` Find/Import interaction.
+

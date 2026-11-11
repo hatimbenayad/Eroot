@@ -336,6 +336,45 @@ export function HostGamePage() {
                     Share the PIN or QR code so players can join from their phones.
                   </p>
                 </div>
+              ) : game.mode === 'team' && game.teams && game.teams.length > 0 ? (
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {game.teams.map((team) => {
+                    const members = roster.filter((p) => p.teamId === team.id);
+                    return (
+                      <div
+                        key={team.id}
+                        className="rounded-2xl border border-white/20 bg-white/10 p-4 space-y-2.5"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="inline-flex items-center gap-2 font-bold">
+                            <span
+                              style={{ backgroundColor: team.colorHex }}
+                              className="h-3.5 w-3.5 rounded-full ring-2 ring-white"
+                            />
+                            {team.name}
+                          </span>
+                          <span className="text-xs font-semibold opacity-80">
+                            {members.length} members
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {members.map((player) => (
+                            <button
+                              key={player.id}
+                              type="button"
+                              title={`Click to kick ${player.nickname}`}
+                              onClick={() => void handleKick(player.id)}
+                              className="group inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-sm font-bold text-slate-900 hover:bg-red-50 hover:text-red-700"
+                            >
+                              <span>{player.nickname}</span>
+                              <UserX className="h-3.5 w-3.5 text-slate-400 group-hover:text-red-600" />
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               ) : (
                 <div className="flex flex-wrap gap-3">
                   {roster.map((player) => (
@@ -447,7 +486,9 @@ export function HostGamePage() {
         {game.state === 'scoreboard' && (
           <div className="mx-auto w-full max-w-2xl space-y-6">
             <div className="flex items-center justify-between">
-              <h1 className="font-display text-3xl font-black">Scoreboard — Top 5</h1>
+              <h1 className="font-display text-3xl font-black">
+                {game.mode === 'team' ? 'Team Scoreboard' : 'Scoreboard — Top 5'}
+              </h1>
               <Button type="button" variant="stage" onClick={() => void handleAction('next')}>
                 Next (Space)
                 <ArrowRight className="h-4 w-4" aria-hidden="true" />
@@ -455,22 +496,47 @@ export function HostGamePage() {
             </div>
 
             <div className="space-y-3">
-              {game.scoreboard.map((entry) => (
-                <div
-                  key={entry.playerId}
-                  className="flex items-center justify-between rounded-2xl bg-white px-5 py-4 text-slate-900 shadow-lg"
-                >
-                  <div className="flex items-center gap-4">
-                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-100 font-black text-indigo-700">
-                      #{entry.rank}
-                    </span>
-                    <span className="text-lg font-bold">{entry.nickname}</span>
-                  </div>
-                  <span className="font-display text-xl font-black text-indigo-700">
-                    {entry.totalScore.toLocaleString()}
-                  </span>
-                </div>
-              ))}
+              {game.mode === 'team' && game.teamScoreboard
+                ? game.teamScoreboard.map((team) => (
+                    <div
+                      key={team.teamId}
+                      className="flex items-center justify-between rounded-2xl bg-white px-5 py-4 text-slate-900 shadow-lg"
+                    >
+                      <div className="flex items-center gap-4">
+                        <span
+                          style={{ backgroundColor: team.colorHex }}
+                          className="flex h-9 w-9 items-center justify-center rounded-full font-black text-white"
+                        >
+                          #{team.rank}
+                        </span>
+                        <div>
+                          <p className="text-lg font-bold">{team.name}</p>
+                          <p className="text-xs text-slate-500">
+                            {team.memberCount} members · avg score
+                          </p>
+                        </div>
+                      </div>
+                      <span className="font-display text-xl font-black text-indigo-700">
+                        {team.totalScore.toLocaleString()}
+                      </span>
+                    </div>
+                  ))
+                : game.scoreboard.map((entry) => (
+                    <div
+                      key={entry.playerId}
+                      className="flex items-center justify-between rounded-2xl bg-white px-5 py-4 text-slate-900 shadow-lg"
+                    >
+                      <div className="flex items-center gap-4">
+                        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-100 font-black text-indigo-700">
+                          #{entry.rank}
+                        </span>
+                        <span className="text-lg font-bold">{entry.nickname}</span>
+                      </div>
+                      <span className="font-display text-xl font-black text-indigo-700">
+                        {entry.totalScore.toLocaleString()}
+                      </span>
+                    </div>
+                  ))}
             </div>
           </div>
         )}
@@ -479,7 +545,9 @@ export function HostGamePage() {
           <div className="mx-auto w-full max-w-3xl text-center space-y-8">
             <div className="space-y-2">
               <Trophy className="mx-auto h-12 w-12 text-amber-400" aria-hidden="true" />
-              <h1 className="font-display text-4xl font-black">Final Podium</h1>
+              <h1 className="font-display text-4xl font-black">
+                {game.mode === 'team' ? 'Team Podium' : 'Final Podium'}
+              </h1>
             </div>
 
             <div
@@ -488,8 +556,15 @@ export function HostGamePage() {
               data-testid="podium-stage"
             >
               {[1, 0, 2].map((slotIdx) => {
-                const winner = game.podium[slotIdx];
-                const heights = ['h-44 bg-indigo-600', 'h-56 bg-amber-400 text-slate-950', 'h-36 bg-indigo-800'];
+                const teamWinner = game.mode === 'team' ? game.teamPodium?.[slotIdx] : undefined;
+                const playerWinner = game.mode !== 'team' ? game.podium[slotIdx] : undefined;
+                const label = teamWinner?.name ?? playerWinner?.nickname;
+                const score = teamWinner?.totalScore ?? playerWinner?.totalScore;
+                const heights = [
+                  'h-44 bg-indigo-600',
+                  'h-56 bg-amber-400 text-slate-950',
+                  'h-36 bg-indigo-800',
+                ];
                 const podiumHeight = heights[slotIdx] ?? 'h-36 bg-indigo-800';
                 const rankLabel = slotIdx === 0 ? '1st' : slotIdx === 1 ? '2nd' : '3rd';
 
@@ -502,11 +577,11 @@ export function HostGamePage() {
                     className="flex flex-col items-center gap-2"
                   >
                     <p className="text-lg font-extrabold truncate max-w-full">
-                      {winner ? winner.nickname : '—'}
+                      {label || '—'}
                     </p>
-                    {winner && (
+                    {typeof score === 'number' && (
                       <p className="text-sm font-bold opacity-90">
-                        {winner.totalScore.toLocaleString()} pts
+                        {score.toLocaleString()} pts
                       </p>
                     )}
                     <div

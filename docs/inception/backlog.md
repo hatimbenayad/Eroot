@@ -93,10 +93,10 @@
 
 ### Milestone: R3 (`v1.0.0`)
 
-#### Epic #50 — `[U8] Team Mode & Self-Paced Challenges` (`type:epic`, `unit:U8`, `priority:p1`)
-- **Story #51:** `As a host, I can run live Team Mode (2-5 teams) and Assign self-paced challenges` (`US-010`, `unit:U8`, `area:host`)
-  - **Task #52:** `feat(u8): implement Team Mode (2-5 teams, player assignment, mean team question scoring, team scoreboard/podium)`
-  - **Task #53:** `feat(u8): implement Self-paced Challenges (Assign modal, deadline/timer/accuracy-only, /challenge/:pin async flow, host management)`
+#### Epic #50 — `[U8] Team Mode & Self-Paced Challenges` (`type:epic`, `unit:U8`, `priority:p1`) — **DONE**
+- [x] **Story #51:** `As a host, I can run live Team Mode (2-5 teams) and Assign self-paced challenges` (`US-010`, `unit:U8`, `area:host`)
+  - [x] **Task #52:** `feat(u8): implement Team Mode (2-5 teams, player assignment, mean team question scoring, team scoreboard/podium)`
+  - [x] **Task #53:** `feat(u8): implement Self-paced Challenges (Assign modal, deadline/timer/accuracy-only, /challenge/:pin async flow, host management)`
 
 #### Epic #54 — `[U9] Spatial & Collaborative Types` (`type:epic`, `unit:U9`, `priority:p2`)
 - **Story #55:** `As a host and player, I can run Pin answer, Drop pin, and two-phase Brainstorm slides` (`US-011`, `unit:U9`, `area:creator`)

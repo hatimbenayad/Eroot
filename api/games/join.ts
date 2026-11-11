@@ -2,7 +2,12 @@ import crypto from 'node:crypto';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { generateFriendlyNickname, isNicknameClean } from '../../shared/moderation/nickname';
 import { joinGameRequestSchema, type GameOptions } from '../../shared/schemas/game';
-import { buildPublicGamePayload, type DbGameRow, type DbPlayerRow } from '../_lib/game-helpers';
+import {
+  buildPublicGamePayload,
+  type DbGameRow,
+  type DbPlayerRow,
+  type DbTeamRow,
+} from '../_lib/game-helpers';
 import {
   broadcastGameEvent,
   enforceRateLimit,
@@ -32,7 +37,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     return;
   }
 
-  const { pin, nickname: rawNickname, identifier: rawIdentifier } = parsed.data;
+  const { pin, nickname: rawNickname, identifier: rawIdentifier, teamId: requestedTeamId } =
+    parsed.data;
 
   const { data: gameData, error: gameErr } = await supabase
     .from('games')
@@ -103,6 +109,31 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     finalNickname = cleaned;
   }
 
+  let assignedTeamId: string | null = null;
+  let gameTeams: DbTeamRow[] | undefined;
+  if (game.mode === 'team') {
+    const { data: teamRows } = await supabase
+      .from('teams')
+      .select('*')
+      .eq('game_id', game.id)
+      .order('position', { ascending: true });
+    gameTeams = (teamRows ?? []) as DbTeamRow[];
+    if (requestedTeamId && gameTeams.some((t) => t.id === requestedTeamId)) {
+      assignedTeamId = requestedTeamId;
+    } else if (gameTeams.length > 0) {
+      // Auto-balance to team with fewest active players
+      const counts = new Map<string, number>(gameTeams.map((t) => [t.id, 0]));
+      for (const p of activePlayers) {
+        if (p.team_id && counts.has(p.team_id)) {
+          counts.set(p.team_id, (counts.get(p.team_id) ?? 0) + 1);
+        }
+      }
+      assignedTeamId = [...gameTeams].sort(
+        (a, b) => (counts.get(a.id) ?? 0) - (counts.get(b.id) ?? 0)
+      )[0]!.id;
+    }
+  }
+
   const sessionToken = crypto.randomUUID();
   const { data: insertedPlayer, error: insertErr } = await supabase
     .from('players')
@@ -111,6 +142,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       nickname: finalNickname,
       identifier: rawIdentifier?.trim() || null,
       session_token: sessionToken,
+      team_id: assignedTeamId,
     })
     .select('*')
     .single();
@@ -128,6 +160,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
   const updatedRoster = [...activePlayers, player].map((p) => ({
     id: p.id,
     nickname: p.nickname,
+    teamId: p.team_id ?? null,
   }));
 
   await broadcastGameEvent(supabase, game.id, 'lobby_roster', { players: updatedRoster });
@@ -137,7 +170,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     playerId: player.id,
     sessionToken,
     nickname: player.nickname,
-    game: buildPublicGamePayload(game, [...activePlayers, player], 0),
+    teamId: player.team_id ?? null,
+    game: buildPublicGamePayload(game, [...activePlayers, player], 0, { teams: gameTeams }),
   });
 }
 

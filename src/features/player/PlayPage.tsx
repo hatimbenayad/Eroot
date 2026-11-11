@@ -25,6 +25,7 @@ export function PlayPage() {
 
   const [game, setGame] = useState<PublicGameSnapshot | null>(null);
   const [nickname, setNickname] = useState(storedSession?.nickname ?? '');
+  const [teamId, setTeamId] = useState<string | null>(null);
   const [totalScore, setTotalScore] = useState(0);
   const [streak, setStreak] = useState(0);
   const [rank, setRank] = useState(1);
@@ -48,6 +49,7 @@ export function PlayPage() {
       const res = await fetchPlayerGameSession(sessionToken, gameId);
       setGame(res.game);
       setNickname(res.player.nickname);
+      setTeamId((res.player as { teamId?: string | null }).teamId ?? null);
       setTotalScore(res.player.totalScore);
       setStreak(res.player.streak);
       setRank(res.player.rank);
@@ -181,6 +183,7 @@ export function PlayPage() {
   }
 
   const theme = getErootTheme(game.themeId);
+  const playerTeam = teamId ? game.teams?.find((t) => t.id === teamId) : undefined;
   const currentSlide = game.slides[game.currentSlideIndex];
   const hasSubmittedCurrent = Boolean(currentSlide && submittedSlides.has(currentSlide.id));
 
@@ -192,6 +195,14 @@ export function PlayPage() {
           <span className="truncate rounded-full bg-white/15 px-3 py-1 text-sm font-bold">
             {nickname}
           </span>
+          {playerTeam && (
+            <span
+              style={{ backgroundColor: playerTeam.colorHex }}
+              className="truncate rounded-full px-2.5 py-0.5 text-xs font-extrabold text-white"
+            >
+              {playerTeam.name}
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-2 shrink-0">
           {streak >= 2 && (

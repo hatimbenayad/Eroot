@@ -12,7 +12,13 @@ import type {
 } from '../../shared/schemas/slide';
 import type { QuizRow, SlideRow } from '../../shared/types/database';
 import { validateQuiz } from '../../shared/validation/quiz-validation';
-import { buildPublicGamePayload, generateGamePin, shuffleArray, type DbGameRow } from '../_lib/game-helpers';
+import {
+  buildPublicGamePayload,
+  generateGamePin,
+  shuffleArray,
+  type DbGameRow,
+  type DbTeamRow,
+} from '../_lib/game-helpers';
 import { getAdminClient, requireHostUser, sendError } from '../_lib/supabase-admin';
 
 function mapDbSlide(row: SlideRow): SlideDraft {
@@ -148,8 +154,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     return;
   }
 
+  let createdTeams: DbTeamRow[] | undefined;
+  if (options.mode === 'team') {
+    const teamRowsToInsert = options.teams.map((t, idx) => ({
+      game_id: createdGame.id,
+      name: t.name,
+      color_hex: t.colorHex,
+      position: idx,
+    }));
+    const { data: teamData, error: teamErr } = await supabase
+      .from('teams')
+      .insert(teamRowsToInsert)
+      .select('*');
+
+    if (teamErr) {
+      await supabase.from('games').delete().eq('id', createdGame.id);
+      sendError(res, 500, 'TEAMS_FAILED', 'Unable to create game teams.');
+      return;
+    }
+    createdTeams = (teamData ?? []) as DbTeamRow[];
+  }
+
   res.status(201).json({
-    game: buildPublicGamePayload(createdGame, [], 0),
+    game: buildPublicGamePayload(createdGame, [], 0, { teams: createdTeams }),
   });
 }
 

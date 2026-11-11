@@ -66,3 +66,4 @@ All award `0` points (`pointsMode = 'none'`, `isCorrect = null`):
 | Empty string or whitespace submitted on `word_cloud` / `open_ended` / `type_answer` | Server & client reject empty submission (`400 INVALID_REQUEST`). |
 | Multi-select with 2 correct answers: player selects 1 correct + 1 wrong | Score is strictly `0`, `isCorrect: false`. |
 | Puzzle created with 4 items | Live snapshot shuffles initial display order so players never receive the sorted solution by default. |
+

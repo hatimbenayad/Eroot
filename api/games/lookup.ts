@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import type { GameOptions } from '../../shared/schemas/game';
+import { mapTeamRows, type DbTeamRow } from '../_lib/game-helpers';
 import { enforceRateLimit, getAdminClient, getClientIp, sendError } from '../_lib/supabase-admin';
 
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
@@ -25,7 +26,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
 
   const { data, error } = await supabase
     .from('games')
-    .select('id, quiz_title, theme_id, settings, state')
+    .select('id, mode, quiz_title, theme_id, settings, state, challenge_deadline')
     .eq('pin', rawPin)
     .neq('state', 'ended')
     .maybeSingle();
@@ -35,14 +36,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     return;
   }
 
+  let teams = undefined;
+  if (data.mode === 'team') {
+    const { data: teamRows } = await supabase
+      .from('teams')
+      .select('*')
+      .eq('game_id', data.id)
+      .order('position', { ascending: true });
+    teams = mapTeamRows((teamRows ?? []) as DbTeamRow[]);
+  }
+
   const settings = (data.settings ?? {}) as Partial<GameOptions>;
   res.status(200).json({
     gameId: data.id,
+    mode: data.mode,
     quizTitle: data.quiz_title,
     themeId: data.theme_id,
     requirePlayerIdentifier: Boolean(settings.requirePlayerIdentifier),
     playerIdentifierLabel: settings.playerIdentifierLabel || 'Full name or ID',
     friendlyNicknames: Boolean(settings.friendlyNicknames),
+    teams,
+    challengeDeadline: data.challenge_deadline ?? null,
   });
 }
 

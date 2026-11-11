@@ -27,13 +27,18 @@ export function calculateSpeedPoints(params: {
   pointsMode: PointsMode;
   responseMs: number;
   questionMs: number;
+  accuracyOnly?: boolean;
 }): number {
-  const { isCorrect, pointsMode, responseMs, questionMs } = params;
+  const { isCorrect, pointsMode, responseMs, questionMs, accuracyOnly = false } = params;
   if (!isCorrect || pointsMode === 'none') {
     return 0;
   }
 
   const maxPoints = getMaxPoints(pointsMode);
+  if (accuracyOnly) {
+    return maxPoints;
+  }
+
   const safeQuestionMs = Math.max(1000, questionMs);
   const clampedResponseMs = Math.min(Math.max(0, responseMs), safeQuestionMs);
 
@@ -60,13 +65,15 @@ export function calculateNpsScore(scores: readonly number[]): number | null {
 export function evaluateSlideAnswer(
   slide: SlideDraft,
   submission: AnswerSubmissionPayload,
-  responseMs: number
+  responseMs: number,
+  options?: { accuracyOnly?: boolean }
 ): EvaluatedAnswer {
   if (isMediaSlideType(slide.type)) {
     return { validOption: false, isCorrect: null, points: 0 };
   }
 
   const questionMs = slide.timeLimit * 1000;
+  const accuracyOnly = Boolean(options?.accuracyOnly);
 
   switch (slide.type) {
     case 'quiz': {
@@ -93,6 +100,7 @@ export function evaluateSlideAnswer(
           pointsMode: slide.pointsMode,
           responseMs,
           questionMs,
+          accuracyOnly,
         });
         return {
           validOption: true,
@@ -114,6 +122,7 @@ export function evaluateSlideAnswer(
           pointsMode: slide.pointsMode,
           responseMs,
           questionMs,
+          accuracyOnly,
         }),
       };
     }
@@ -133,6 +142,7 @@ export function evaluateSlideAnswer(
           pointsMode: slide.pointsMode,
           responseMs,
           questionMs,
+          accuracyOnly,
         }),
       };
     }
@@ -153,6 +163,7 @@ export function evaluateSlideAnswer(
           pointsMode: slide.pointsMode,
           responseMs,
           questionMs,
+          accuracyOnly,
         }),
       };
     }
@@ -174,6 +185,7 @@ export function evaluateSlideAnswer(
           pointsMode: slide.pointsMode,
           responseMs,
           questionMs,
+          accuracyOnly,
         }),
       };
     }
@@ -198,6 +210,7 @@ export function evaluateSlideAnswer(
           pointsMode: slide.pointsMode,
           responseMs,
           questionMs,
+          accuracyOnly,
         }),
       };
     }

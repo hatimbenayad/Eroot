@@ -60,3 +60,4 @@ describe('Report CSV & XLSX Export (U6)', () => {
     expect(xlsxBytes[1]).toBe(0x4b);
   });
 });
+

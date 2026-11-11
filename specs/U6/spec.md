@@ -51,3 +51,4 @@ Pure aggregation module `shared/reports/analytics.ts` computes deterministic sta
 | Fewer than 3 difficult questions (`< 35%` correct) | Button is disabled with clear helper text (`"Needs at least 3 difficult questions (<35% correct)"`). |
 | Original `quiz_id` was deleted before viewing report | `Play again` shows graceful disabled tooltip; difficult-questions builder still works because slides come from `game_snapshots`! |
 | Player nickname or open-ended text begins with `=SUM(...)` or `+1` | Export escaper prefixes `'` so Excel/Google Sheets never executes formulas. |
+

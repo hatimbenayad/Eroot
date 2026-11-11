@@ -36,3 +36,4 @@
 | Player attempts to join or submit to a challenge past `challenge_deadline` or after host ended it | Server returns `409 CHALLENGE_CLOSED` and UI displays closed notice. |
 | Team has 0 members | Team displays `0` score cleanly without division-by-zero `NaN`. |
 | Host removes a player from an active challenge | Player `is_kicked` becomes `true`, excluded from leaderboard & reports; client session blocked. |
+

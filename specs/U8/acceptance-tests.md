@@ -11,3 +11,4 @@ Traceability: `US-010` (`#51`), `FR-041`, `FR-050`, `FR-051`, `FR-052`.
 - **Given** a self-paced challenge with `accuracyOnly: true` and `deadline` in the past
 - **When** a correct answer is scored with `accuracyOnly: true` -> awards full `1000` pts even at `19s` of `20s`.
 - **When** submitting after `deadline` -> server rejects with `409 CHALLENGE_CLOSED`.
+

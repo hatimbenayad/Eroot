@@ -19,3 +19,4 @@
    - Render Host active view (including gradual `mediaReveal` animation) & Host reveal visualizations (multi-select checkmarks, slider target+range, word cloud weights, NPS score card, open-ended response cards, puzzle sequence).
 6. **Tests:**
    - Vitest unit tests for Multi-select, Type answer, Slider, Puzzle scoring/sanitization/validation, NPS math, video URL safety, and Creator R2 editors.
+

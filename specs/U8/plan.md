@@ -12,3 +12,4 @@
    - Update `GameOptionsModal`, `HostGamePage`, `JoinPage`, `PlayPage` for Team Mode.
    - Build `AssignModal`, `ChallengePlayPage` (`/challenge/:pin`), and `ChallengesPage` (`/challenges`) + Library `Assign` button.
 5. **Tests:** Vitest unit tests for `computeTeamStandings`, accuracy-only challenge scoring, and challenge Zod schemas.
+

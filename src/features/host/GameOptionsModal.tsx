@@ -14,7 +14,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/features/auth/useAuth';
 import { createLiveGame } from '@/features/live/api';
-import { gameOptionsSchema, type GameOptions } from '@shared/schemas/game';
+import { cn } from '@/lib/cn';
+import {
+  DEFAULT_TEAM_PRESETS,
+  gameOptionsSchema,
+  type GameOptions,
+} from '@shared/schemas/game';
 
 interface GameOptionsModalProps {
   open: boolean;
@@ -35,6 +40,17 @@ export function GameOptionsModal({
   const [options, setOptions] = useState<GameOptions>(() => gameOptionsSchema.parse({}));
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  function setTeamCount(count: number) {
+    const clamped = Math.min(5, Math.max(2, count));
+    setOptions((prev) => ({
+      ...prev,
+      teams: DEFAULT_TEAM_PRESETS.slice(0, clamped).map((preset, idx) => ({
+        name: prev.teams[idx]?.name || preset.name,
+        colorHex: preset.colorHex,
+      })),
+    }));
+  }
 
   async function handleLaunch() {
     if (!quizId || !session?.access_token) {
@@ -62,7 +78,8 @@ export function GameOptionsModal({
         <DialogHeader>
           <DialogTitle>Host Live Game</DialogTitle>
           <DialogDescription>
-            Configure live options for <span className="font-semibold">{quizTitle || 'Untitled quiz'}</span>.
+            Configure live options for{' '}
+            <span className="font-semibold">{quizTitle || 'Untitled quiz'}</span>.
           </DialogDescription>
         </DialogHeader>
 
@@ -70,22 +87,82 @@ export function GameOptionsModal({
           {error && <Alert variant="error">{error}</Alert>}
 
           <div className="grid grid-cols-2 gap-3">
-            <div className="rounded-xl border-2 border-indigo-600 bg-indigo-50/70 p-3">
-              <p className="text-sm font-bold text-indigo-950">Classic (PvP)</p>
-              <p className="text-xs text-indigo-800">Individual player leaderboard</p>
-            </div>
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 opacity-65">
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-semibold text-slate-700">Team mode</p>
-                <span className="rounded bg-slate-200 px-1.5 py-0.5 text-[10px] font-bold">R3</span>
-              </div>
-              <p className="text-xs text-slate-500">2–5 teams (Unit U8)</p>
-            </div>
+            <button
+              type="button"
+              onClick={() => setOptions((o) => ({ ...o, mode: 'classic' }))}
+              className={cn(
+                'rounded-xl border-2 p-3 text-left transition-all',
+                options.mode === 'classic'
+                  ? 'border-indigo-600 bg-indigo-50/70'
+                  : 'border-slate-200 bg-white hover:border-slate-300'
+              )}
+            >
+              <p className="text-sm font-bold text-slate-900">Classic (PvP)</p>
+              <p className="text-xs text-slate-600">Individual player leaderboard</p>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setOptions((o) => ({ ...o, mode: 'team' }))}
+              className={cn(
+                'rounded-xl border-2 p-3 text-left transition-all',
+                options.mode === 'team'
+                  ? 'border-indigo-600 bg-indigo-50/70'
+                  : 'border-slate-200 bg-white hover:border-slate-300'
+              )}
+            >
+              <p className="text-sm font-bold text-slate-900">Team mode</p>
+              <p className="text-xs text-slate-600">2–5 teams · average member score</p>
+            </button>
           </div>
+
+          {options.mode === 'team' && (
+            <div className="space-y-3 rounded-xl border border-indigo-200 bg-indigo-50/40 p-4">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="team-count-select">Number of teams</Label>
+                <select
+                  id="team-count-select"
+                  value={options.teams.length}
+                  onChange={(e) => setTeamCount(Number(e.target.value))}
+                  className="h-8 rounded-md border border-slate-300 bg-white px-2 text-sm"
+                >
+                  {[2, 3, 4, 5].map((n) => (
+                    <option key={n} value={n}>
+                      {n} teams
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                {options.teams.map((team, idx) => (
+                  <div key={idx} className="flex items-center gap-2">
+                    <span
+                      style={{ backgroundColor: team.colorHex }}
+                      className="h-4 w-4 shrink-0 rounded-full"
+                    />
+                    <Input
+                      aria-label={`Team ${idx + 1} name`}
+                      value={team.name}
+                      maxLength={40}
+                      onChange={(e) =>
+                        setOptions((prev) => ({
+                          ...prev,
+                          teams: prev.teams.map((t, i) =>
+                            i === idx ? { ...t, name: e.target.value } : t
+                          ),
+                        }))
+                      }
+                      className="h-8 text-xs"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="space-y-2.5 rounded-xl border border-slate-200 p-4">
             <label className="flex items-center justify-between gap-3 text-sm">
-              <span>Show questions & answers on player devices</span>
+              <span>Show questions &amp; answers on player devices</span>
               <input
                 type="checkbox"
                 checked={options.showQuestionOnDevices}
@@ -206,4 +283,3 @@ export function GameOptionsModal({
     </Dialog>
   );
 }
-

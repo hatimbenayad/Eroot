@@ -6,8 +6,11 @@ import type {
   PublicGameSnapshot,
   RevealPayload,
   ScoreboardEntry,
+  TeamScoreboardEntry,
+  TeamSummary,
 } from '../../shared/schemas/game';
 import type { PublicSlide } from '../../shared/schemas/sanitizer';
+import { computeTeamStandings, type TeamAnswerRef } from '../../shared/scoring/team';
 
 export function generateGamePin(): string {
   return crypto.randomInt(1_000_000, 10_000_000).toString();
@@ -22,6 +25,14 @@ export function shuffleArray<T>(items: readonly T[]): T[] {
     copy[j] = tmp;
   }
   return copy;
+}
+
+export interface DbTeamRow {
+  id: string;
+  game_id: string;
+  name: string;
+  color_hex: string;
+  position: number;
 }
 
 export interface DbGameRow {
@@ -39,6 +50,9 @@ export interface DbGameRow {
   max_players: number;
   public_slides: PublicSlide[];
   reveal_payload: RevealPayload | null;
+  challenge_deadline?: string | null;
+  challenge_timer_enabled?: boolean;
+  challenge_accuracy_only?: boolean;
 }
 
 export interface DbPlayerRow {
@@ -47,6 +61,7 @@ export interface DbPlayerRow {
   nickname: string;
   identifier: string | null;
   session_token: string;
+  team_id?: string | null;
   total_score: number;
   streak: number;
   is_kicked: boolean;
@@ -65,18 +80,38 @@ export function computeScoreboard(players: readonly DbPlayerRow[]): ScoreboardEn
   return sorted.map((p, idx) => ({
     playerId: p.id,
     nickname: p.nickname,
+    teamId: p.team_id ?? null,
     totalScore: p.total_score,
     streak: p.streak,
     rank: idx + 1,
   }));
 }
 
+export function mapTeamRows(rows: readonly DbTeamRow[]): TeamSummary[] {
+  return [...rows]
+    .sort((a, b) => a.position - b.position)
+    .map((t) => ({
+      id: t.id,
+      name: t.name,
+      colorHex: t.color_hex,
+      position: t.position,
+    }));
+}
+
 export function buildPublicGamePayload(
   row: DbGameRow,
   players: readonly DbPlayerRow[],
-  answerCount = 0
+  answerCount = 0,
+  extra?: { teams?: DbTeamRow[]; answers?: TeamAnswerRef[] }
 ): PublicGameSnapshot {
   const ranked = computeScoreboard(players);
+  const teams = extra?.teams ? mapTeamRows(extra.teams) : undefined;
+  let teamStandings: TeamScoreboardEntry[] | undefined;
+
+  if (row.mode === 'team' && teams) {
+    teamStandings = computeTeamStandings(teams, players, extra?.answers ?? []);
+  }
+
   return {
     id: row.id,
     pin: row.pin,
@@ -92,7 +127,12 @@ export function buildPublicGamePayload(
     revealPayload: row.state === 'question_reveal' ? row.reveal_payload : null,
     scoreboard: ranked.slice(0, 5),
     podium: ranked.slice(0, 3),
+    teams,
+    teamScoreboard: teamStandings?.slice(0, 5),
+    teamPodium: teamStandings?.slice(0, 3),
+    challengeDeadline: row.challenge_deadline ?? null,
+    challengeTimerEnabled: row.challenge_timer_enabled,
+    challengeAccuracyOnly: row.challenge_accuracy_only,
     answerCount,
   };
 }
-

@@ -16,3 +16,4 @@ Traceability: `US-009` (`#46`), `FR-005`, `FR-070`–`FR-073`.
 - **Given** `AddSlideModal` opened in Creator
 - **When** the creator searches `"capital"` on the `Find` tab and clicks `Insert`
 - **Then** the matched question is appended as a fresh slide in the current quiz.
+

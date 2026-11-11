@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { BookOpen, BarChart3, Compass, LogOut } from 'lucide-react';
+import { BookOpen, BarChart3, CalendarClock, Compass, LogOut } from 'lucide-react';
 import { ErootLogo } from '@/components/eroot/ErootLogo';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/features/auth/useAuth';
@@ -68,6 +68,20 @@ export function HostAppShell({ children }: { children?: ReactNode }) {
               >
                 <BarChart3 className="h-4 w-4" aria-hidden="true" />
                 {t('nav.reports')}
+              </NavLink>
+              <NavLink
+                to="/challenges"
+                className={({ isActive }) =>
+                  cn(
+                    'inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                    isActive
+                      ? 'bg-indigo-50 text-indigo-700'
+                      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                  )
+                }
+              >
+                <CalendarClock className="h-4 w-4" aria-hidden="true" />
+                Challenges
               </NavLink>
             </nav>
           </div>

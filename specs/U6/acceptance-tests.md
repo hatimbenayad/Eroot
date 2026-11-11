@@ -16,3 +16,4 @@ Traceability: `US-008` (`#40`), `FR-060`–`FR-065`.
 - **Given** a player nickname `=cmd|' /C calc'!A0` or open-ended answer `+1+1`
 - **When** exported via `buildReportCsv` / `downloadReportXlsx`
 - **Then** dangerous leading formula characters (`=`, `+`, `-`, `@`) are escaped with `'`.
+

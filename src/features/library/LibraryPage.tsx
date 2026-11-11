@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
+  CalendarClock,
   Copy,
   Edit3,
   Folder,
@@ -39,6 +40,7 @@ import {
   updateQuizSharing,
   type LibraryQuizSummary,
 } from '@/features/creator/api';
+import { AssignModal } from '@/features/challenges/AssignModal';
 import { GameOptionsModal } from '@/features/host/GameOptionsModal';
 import { useTranslation } from '@/i18n/useTranslation';
 import { cn } from '@/lib/cn';
@@ -60,6 +62,7 @@ export function LibraryPage() {
 
   const [deleteTarget, setDeleteTarget] = useState<LibraryQuizSummary | null>(null);
   const [hostTarget, setHostTarget] = useState<LibraryQuizSummary | null>(null);
+  const [assignTarget, setAssignTarget] = useState<LibraryQuizSummary | null>(null);
   const [shareTarget, setShareTarget] = useState<LibraryQuizSummary | null>(null);
   const [shareVisibility, setShareVisibility] = useState<QuizVisibility>('private');
   const [shareSubject, setShareSubject] = useState('');
@@ -397,6 +400,17 @@ export function LibraryPage() {
                     {t('library.hostLive')}
                   </Button>
 
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    disabled={!item.quiz.isValid}
+                    onClick={() => setAssignTarget(item)}
+                  >
+                    <CalendarClock className="h-3.5 w-3.5" aria-hidden="true" />
+                    Assign
+                  </Button>
+
                   <div className="ml-auto flex items-center gap-1">
                     <Button
                       type="button"
@@ -584,6 +598,13 @@ export function LibraryPage() {
         onOpenChange={(open) => !open && setHostTarget(null)}
         quizId={hostTarget?.quiz.id ?? null}
         quizTitle={hostTarget?.quiz.title ?? ''}
+      />
+
+      <AssignModal
+        open={Boolean(assignTarget)}
+        onOpenChange={(open) => !open && setAssignTarget(null)}
+        quizId={assignTarget?.quiz.id ?? null}
+        quizTitle={assignTarget?.quiz.title ?? ''}
       />
     </div>
   );

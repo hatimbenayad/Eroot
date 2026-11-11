@@ -1,19 +1,25 @@
 import { getSupabaseClient } from '@/lib/supabase';
 import type {
+  GameMode,
   GameOptions,
   LobbyPlayerSummary,
   PlayerQuestionFeedback,
   PublicGameSnapshot,
+  TeamSummary,
 } from '@shared/schemas/game';
+import type { PublicSlide } from '@shared/schemas/sanitizer';
 import type { GameAction } from '@shared/state-machine/game-state';
 
 export interface LookupGameResponse {
   gameId: string;
+  mode?: GameMode;
   quizTitle: string;
   themeId: string;
   requirePlayerIdentifier: boolean;
   playerIdentifierLabel: string;
   friendlyNicknames: boolean;
+  teams?: TeamSummary[];
+  challengeDeadline?: string | null;
 }
 
 export interface JoinGameResponse {
@@ -21,6 +27,7 @@ export interface JoinGameResponse {
   playerId: string;
   sessionToken: string;
   nickname: string;
+  teamId?: string | null;
   game: PublicGameSnapshot;
 }
 
@@ -95,6 +102,7 @@ export async function joinGame(payload: {
   pin: string;
   nickname?: string;
   identifier?: string;
+  teamId?: string;
 }): Promise<JoinGameResponse> {
   const res = await fetch('/api/games/join', {
     method: 'POST',
@@ -223,5 +231,155 @@ export function subscribeToGameChannel(
   return () => {
     void supabase.removeChannel(channel);
   };
+}
+
+export interface HostChallengeItem {
+  id: string;
+  pin: string;
+  quiz_title: string;
+  state: string;
+  challenge_deadline: string | null;
+  challenge_timer_enabled: boolean;
+  challenge_accuracy_only: boolean;
+  max_players: number;
+  created_at: string;
+  players: {
+    id: string;
+    nickname: string;
+    identifier: string | null;
+    total_score: number;
+    is_kicked: boolean;
+  }[];
+}
+
+export interface ChallengePlayState {
+  challenge: {
+    id: string;
+    pin: string;
+    quizTitle: string;
+    themeId: string;
+    slides: PublicSlide[];
+    deadline: string | null;
+    timerEnabled: boolean;
+    accuracyOnly: boolean;
+    closed: boolean;
+    requirePlayerIdentifier: boolean;
+    playerIdentifierLabel: string;
+    friendlyNicknames: boolean;
+  };
+  player: {
+    id: string;
+    nickname: string;
+    totalScore: number;
+    streak: number;
+  } | null;
+  submittedSlideIds: string[];
+}
+
+export async function createChallenge(
+  accessToken: string,
+  payload: {
+    quizId: string;
+    deadline: string;
+    timerEnabled: boolean;
+    accuracyOnly: boolean;
+    requirePlayerIdentifier: boolean;
+    playerIdentifierLabel: string;
+    friendlyNicknames: boolean;
+    maxPlayers: number;
+  }
+): Promise<{ gameId: string; pin: string }> {
+  const res = await fetch('/api/challenges', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify(payload),
+  });
+  return parseJson<{ gameId: string; pin: string }>(res);
+}
+
+export async function fetchHostChallenges(accessToken: string): Promise<HostChallengeItem[]> {
+  const res = await fetch('/api/challenges', {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  const data = await parseJson<{ challenges: HostChallengeItem[] }>(res);
+  return data.challenges;
+}
+
+export async function manageChallenge(
+  accessToken: string,
+  payload: {
+    gameId: string;
+    deadline?: string;
+    endEarly?: boolean;
+    removePlayerId?: string;
+  }
+): Promise<void> {
+  const res = await fetch('/api/challenges', {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify(payload),
+  });
+  await parseJson<{ ok: boolean }>(res);
+}
+
+export async function fetchChallengePlayState(
+  pinOrId: { pin?: string; gameId?: string },
+  playerToken?: string
+): Promise<ChallengePlayState> {
+  const param = pinOrId.gameId
+    ? `gameId=${encodeURIComponent(pinOrId.gameId)}`
+    : `pin=${encodeURIComponent(pinOrId.pin ?? '')}`;
+  const res = await fetch(`/api/challenges/play?${param}`, {
+    headers: playerToken ? { 'x-player-token': playerToken } : undefined,
+  });
+  return parseJson<ChallengePlayState>(res);
+}
+
+export async function joinChallenge(payload: {
+  pin: string;
+  nickname?: string;
+  identifier?: string;
+}): Promise<{ gameId: string; playerId: string; sessionToken: string; nickname: string }> {
+  const res = await fetch('/api/challenges/play', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'join', ...payload }),
+  });
+  return parseJson(res);
+}
+
+export async function submitChallengeAnswer(
+  playerToken: string,
+  payload: {
+    gameId: string;
+    slideId: string;
+    optionId?: string;
+    optionIds?: string[];
+    text?: string;
+    value?: number;
+    order?: string[];
+    elapsedMs: number;
+  }
+): Promise<{
+  accepted: boolean;
+  isCorrect: boolean | null;
+  pointsEarned: number;
+  totalScore: number;
+}> {
+  const res = await fetch('/api/challenges/play', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-player-token': playerToken,
+    },
+    body: JSON.stringify({ action: 'submit', ...payload }),
+  });
+  return parseJson(res);
 }
 

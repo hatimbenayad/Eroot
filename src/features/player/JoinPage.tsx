@@ -27,6 +27,7 @@ export function JoinPage() {
   const [lookupInfo, setLookupInfo] = useState<LookupGameResponse | null>(null);
   const [nickname, setNickname] = useState('');
   const [identifier, setIdentifier] = useState('');
+  const [selectedTeamId, setSelectedTeamId] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -38,6 +39,10 @@ export function JoinPage() {
       setLoading(true);
       lookupGameByPin(initialPin)
         .then((info) => {
+          if (info.mode === 'challenge') {
+            navigate(`/challenge/${initialPin}`, { replace: true });
+            return;
+          }
           setLookupInfo(info);
           setError(null);
         })
@@ -46,7 +51,7 @@ export function JoinPage() {
         })
         .finally(() => setLoading(false));
     }
-  }, [initialPin]);
+  }, [initialPin, navigate]);
 
   async function handlePinSubmit(event: FormEvent) {
     event.preventDefault();
@@ -60,6 +65,10 @@ export function JoinPage() {
     setError(null);
     try {
       const info = await lookupGameByPin(cleaned);
+      if (info.mode === 'challenge') {
+        navigate(`/challenge/${cleaned}`);
+        return;
+      }
       setPin(cleaned);
       setLookupInfo(info);
     } catch (err) {
@@ -80,6 +89,7 @@ export function JoinPage() {
         pin,
         nickname: lookupInfo.friendlyNicknames ? undefined : nickname,
         identifier: lookupInfo.requirePlayerIdentifier ? identifier : undefined,
+        teamId: selectedTeamId || undefined,
       });
 
       savePlayerSession({
@@ -178,7 +188,26 @@ export function JoinPage() {
                 ) : (
                   <div className="space-y-1.5">
                     <Label htmlFor="player-nickname">Nickname</Label>
-                    <div className="flex gap-2">
+                    {lookupInfo.mode === 'team' && lookupInfo.teams && lookupInfo.teams.length > 0 && (
+                  <div className="space-y-1.5">
+                    <Label htmlFor="player-team-select">Choose team</Label>
+                    <select
+                      id="player-team-select"
+                      value={selectedTeamId}
+                      onChange={(e) => setSelectedTeamId(e.target.value)}
+                      className="h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold"
+                    >
+                      <option value="">Auto-assign balanced team</option>
+                      {lookupInfo.teams.map((tm) => (
+                        <option key={tm.id} value={tm.id}>
+                          {tm.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                <div className="flex gap-2">
                       <Input
                         id="player-nickname"
                         required
@@ -198,6 +227,25 @@ export function JoinPage() {
                         <Dices className="h-4 w-4" aria-hidden="true" />
                       </Button>
                     </div>
+                  </div>
+                )}
+
+                {lookupInfo.mode === 'team' && lookupInfo.teams && lookupInfo.teams.length > 0 && (
+                  <div className="space-y-1.5">
+                    <Label htmlFor="player-team-select">Choose team</Label>
+                    <select
+                      id="player-team-select"
+                      value={selectedTeamId}
+                      onChange={(e) => setSelectedTeamId(e.target.value)}
+                      className="h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold"
+                    >
+                      <option value="">Auto-assign balanced team</option>
+                      {lookupInfo.teams.map((tm) => (
+                        <option key={tm.id} value={tm.id}>
+                          {tm.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 )}
 

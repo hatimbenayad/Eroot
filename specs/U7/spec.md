@@ -47,3 +47,4 @@
 | Spreadsheet has 3 valid rows and 1 invalid row | Show row-level error for the invalid row while allowing importing the 3 valid questions (or fixing first). |
 | Unauthenticated user clicks `Use template` or `Copy to My Library` on `/discover` | Redirect cleanly to `/auth?redirect=/discover`. |
 | Link-shared quiz opened at `/discover?shared=<id>` | Loads via `get_shared_quiz` RPC without exposing other private or link-only quizzes in search. |
+

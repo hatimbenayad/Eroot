@@ -12,3 +12,4 @@
    - Wire `/reports/:reportId` in `src/app/App.tsx`.
 5. **Tests:**
    - Vitest unit tests for `computeReportAnalytics` (`<35%` difficult threshold, zero-division safety, needs-help, unfinished, identifier preservation), `escapeSpreadsheetCell` / `buildReportCsv`, and `ReportDetailPage` integration test!
+

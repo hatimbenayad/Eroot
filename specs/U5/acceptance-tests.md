@@ -20,3 +20,4 @@ Traceability: `US-007` (`#33`), `FR-010`, `FR-016`–`FR-022`, `FR-081`.
 - **Given** `NPS scale` submissions `[10, 9, 5, 8]` (2 promoters, 1 detractor, 1 passive)
 - **When** revealed on Host stage
 - **Then** NPS displays `25` (`50% - 25%`) and `0` points are awarded; `Video` slides convert YouTube links to `youtube-nocookie.com/embed/...` and reject unsafe schemes.
+

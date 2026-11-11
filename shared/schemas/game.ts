@@ -12,8 +12,26 @@ export type GameState =
   | 'podium'
   | 'ended';
 
+export const DEFAULT_TEAM_PRESETS = [
+  { name: 'Crimson Foxes', colorHex: '#dc2626' },
+  { name: 'Cobalt Owls', colorHex: '#2563eb' },
+  { name: 'Amber Lions', colorHex: '#eab308' },
+  { name: 'Emerald Lynxes', colorHex: '#15803d' },
+  { name: 'Teal Falcons', colorHex: '#0f766e' },
+] as const;
+
+export const teamConfigSchema = z.object({
+  name: z.string().trim().min(1).max(40),
+  colorHex: z.string().regex(/^#[0-9a-fA-F]{6}$/),
+});
+
 export const gameOptionsSchema = z.object({
-  mode: z.enum(['classic']).default('classic'),
+  mode: z.enum(['classic', 'team']).default('classic'),
+  teams: z
+    .array(teamConfigSchema)
+    .min(2)
+    .max(5)
+    .default(DEFAULT_TEAM_PRESETS.slice(0, 3)),
   randomizeQuestions: z.boolean().default(false),
   randomizeAnswers: z.boolean().default(false),
   showQuestionOnDevices: z.boolean().default(false),
@@ -32,6 +50,24 @@ export const createGameRequestSchema = z.object({
   options: gameOptionsSchema.default({}),
 });
 
+export const createChallengeRequestSchema = z.object({
+  quizId: z.string().uuid(),
+  deadline: z.string().datetime(),
+  timerEnabled: z.boolean().default(true),
+  accuracyOnly: z.boolean().default(false),
+  requirePlayerIdentifier: z.boolean().default(false),
+  playerIdentifierLabel: z.string().trim().max(60).default('Full name or ID'),
+  friendlyNicknames: z.boolean().default(false),
+  maxPlayers: z.number().int().min(2).max(500).default(100),
+});
+
+export const manageChallengeRequestSchema = z.object({
+  gameId: z.string().uuid(),
+  deadline: z.string().datetime().optional(),
+  endEarly: z.boolean().optional(),
+  removePlayerId: z.string().uuid().optional(),
+});
+
 export const joinGameRequestSchema = z.object({
   pin: z
     .string()
@@ -39,6 +75,7 @@ export const joinGameRequestSchema = z.object({
     .regex(/^\d{6,7}$/, 'Enter a valid 6 or 7 digit Game PIN.'),
   nickname: z.string().trim().max(24).optional(),
   identifier: z.string().trim().max(80).optional(),
+  teamId: z.string().uuid().optional(),
 });
 
 export const submitAnswerRequestSchema = z
@@ -76,9 +113,26 @@ export const kickPlayerRequestSchema = z.object({
   playerId: z.string().uuid(),
 });
 
+export interface TeamSummary {
+  id: string;
+  name: string;
+  colorHex: string;
+  position: number;
+}
+
+export interface TeamScoreboardEntry {
+  teamId: string;
+  name: string;
+  colorHex: string;
+  memberCount: number;
+  totalScore: number;
+  rank: number;
+}
+
 export interface ScoreboardEntry {
   playerId: string;
   nickname: string;
+  teamId?: string | null;
   totalScore: number;
   streak: number;
   rank: number;
@@ -103,6 +157,7 @@ export interface RevealPayload {
 export interface LobbyPlayerSummary {
   id: string;
   nickname: string;
+  teamId?: string | null;
 }
 
 export interface PlayerQuestionFeedback {
@@ -131,5 +186,11 @@ export interface PublicGameSnapshot {
   revealPayload: RevealPayload | null;
   scoreboard: ScoreboardEntry[];
   podium: ScoreboardEntry[];
+  teams?: TeamSummary[];
+  teamScoreboard?: TeamScoreboardEntry[];
+  teamPodium?: TeamScoreboardEntry[];
+  challengeDeadline?: string | null;
+  challengeTimerEnabled?: boolean;
+  challengeAccuracyOnly?: boolean;
   answerCount: number;
 }

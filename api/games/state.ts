@@ -12,7 +12,13 @@ import {
   InvalidGameTransitionError,
   transitionGameState,
 } from '../../shared/state-machine/game-state';
-import { buildPublicGamePayload, type DbGameRow, type DbPlayerRow } from '../_lib/game-helpers';
+import {
+  buildPublicGamePayload,
+  type DbGameRow,
+  type DbPlayerRow,
+  type DbTeamRow,
+} from '../_lib/game-helpers';
+import type { TeamAnswerRef } from '../../shared/scoring/team';
 import {
   broadcastGameEvent,
   getAdminClient,
@@ -254,7 +260,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     answerCount = updatedGame.reveal_payload.totalAnswers;
   }
 
-  const publicGame = buildPublicGamePayload(updatedGame, activePlayers, answerCount);
+  let teams: DbTeamRow[] | undefined;
+  let teamAnswers: TeamAnswerRef[] | undefined;
+  if (updatedGame.mode === 'team') {
+    const [{ data: teamRows }, { data: ansRows }] = await Promise.all([
+      supabase.from('teams').select('*').eq('game_id', gameId).order('position', { ascending: true }),
+      supabase.from('answers').select('player_id, slide_id, points').eq('game_id', gameId),
+    ]);
+    teams = (teamRows ?? []) as DbTeamRow[];
+    teamAnswers = (ansRows ?? []) as TeamAnswerRef[];
+  }
+
+  const publicGame = buildPublicGamePayload(updatedGame, activePlayers, answerCount, {
+    teams,
+    answers: teamAnswers,
+  });
   await broadcastGameEvent(supabase, gameId, 'game_state', { game: publicGame });
 
   res.status(200).json({ game: publicGame });

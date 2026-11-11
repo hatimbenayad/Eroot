@@ -9,6 +9,8 @@ import { AuthPage } from '@/features/auth/AuthPage';
 import { AuthProvider } from '@/features/auth/AuthProvider';
 import { RequireAuth } from '@/features/auth/RequireAuth';
 import { useAuth } from '@/features/auth/useAuth';
+import { ChallengePlayPage } from '@/features/challenges/ChallengePlayPage';
+import { ChallengesPage } from '@/features/challenges/ChallengesPage';
 import { CreatorPage } from '@/features/creator/CreatorPage';
 import { DiscoverPage } from '@/features/discover/DiscoverPage';
 import { HostGamePage } from '@/features/host/HostGamePage';
@@ -69,6 +71,7 @@ export function App() {
                   <Route path="/auth" element={<AuthPage />} />
                   <Route path="/join" element={<JoinPage />} />
                   <Route path="/play/:gameId" element={<PlayPage />} />
+                  <Route path="/challenge/:pin" element={<ChallengePlayPage />} />
                   <Route path="/discover" element={<DiscoverRoute />} />
 
                   <Route element={<RequireAuth />}>
@@ -78,6 +81,7 @@ export function App() {
                       <Route path="/library" element={<LibraryPage />} />
                       <Route path="/reports" element={<ReportsPage />} />
                       <Route path="/reports/:reportId" element={<ReportDetailPage />} />
+                      <Route path="/challenges" element={<ChallengesPage />} />
                     </Route>
                   </Route>
 
