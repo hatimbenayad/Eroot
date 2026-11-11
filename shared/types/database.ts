@@ -11,6 +11,13 @@ export interface ProfileRow {
   updated_at: string;
 }
 
+export interface FolderRow {
+  id: string;
+  owner_id: string;
+  name: string;
+  created_at: string;
+}
+
 export interface QuizRow {
   id: string;
   owner_id: string;
@@ -25,6 +32,8 @@ export interface QuizRow {
   is_published: boolean;
   tags: string[];
   subject: string;
+  folder_id?: string | null;
+  is_favourite?: boolean;
   created_at: string;
   updated_at: string;
 }

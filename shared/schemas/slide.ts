@@ -196,6 +196,10 @@ export interface QuizDraft {
   musicPreset: MusicPreset;
   isValid: boolean;
   isPublished: boolean;
+  folderId?: string | null;
+  isFavourite?: boolean;
+  tags?: string[];
+  subject?: string;
 }
 
 export function parseSafeVideoEmbed(rawUrl: string): string | null {
