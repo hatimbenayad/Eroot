@@ -11,7 +11,8 @@ import {
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/cn';
 import { getErootTheme } from '@shared/constants/themes';
-import type { ClassicContent, PollContent, QuizContent, SlideDraft } from '@shared/schemas/slide';
+import { sanitizeSlideForPlayer } from '@shared/schemas/sanitizer';
+import type { ClassicContent, QuizContent, SlideDraft } from '@shared/schemas/slide';
 
 interface CreatorPreviewModalProps {
   open: boolean;
@@ -45,12 +46,13 @@ export function CreatorPreviewModal({
 
   if (!slide) return null;
 
-  const options =
+  const sanitized = sanitizeSlideForPlayer(slide);
+  const quizCorrectIds =
     slide.type === 'quiz' || slide.type === 'true_false'
-      ? (slide.content as QuizContent).options
-      : slide.type === 'poll'
-        ? (slide.content as PollContent).options
-        : [];
+      ? new Set(
+          (slide.content as QuizContent).options.filter((o) => o.isCorrect).map((o) => o.id)
+        )
+      : null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -94,17 +96,24 @@ export function CreatorPreviewModal({
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                {options.map((opt, optIdx) => (
-                  <AnswerTile
-                    key={opt.id}
-                    index={optIdx}
-                    label={opt.text || `Answer ${optIdx + 1}`}
-                    interactive={false}
-                    revealed={revealed && 'isCorrect' in opt}
-                    isCorrect={'isCorrect' in opt ? Boolean(opt.isCorrect) : undefined}
-                  />
-                ))}
+              <div className="space-y-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  {sanitized.options.map((opt, optIdx) => (
+                    <AnswerTile
+                      key={opt.id}
+                      index={optIdx}
+                      label={opt.text || `Answer ${optIdx + 1}`}
+                      interactive={false}
+                      revealed={revealed && quizCorrectIds !== null}
+                      isCorrect={quizCorrectIds ? quizCorrectIds.has(opt.id) : undefined}
+                    />
+                  ))}
+                </div>
+                {slide.type === 'poll' && (
+                  <p className="text-center text-xs font-medium opacity-85">
+                    Poll — No points awarded; live distribution displays on reveal.
+                  </p>
+                )}
               </div>
             )}
           </div>

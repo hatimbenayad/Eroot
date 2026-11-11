@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/features/auth/useAuth';
 import { useTranslation } from '@/i18n/useTranslation';
 import { fetchQuizWithSlides, saveQuizAndSlides, uploadQuizMedia } from './api';
+import { AddSlideModal } from './components/AddSlideModal';
 import { CreatorPreviewModal } from './components/CreatorPreviewModal';
 import { CreatorTopBar } from './components/CreatorTopBar';
 import { PropertiesPanel } from './components/PropertiesPanel';
@@ -23,6 +24,7 @@ export function CreatorPage() {
   const [notFound, setNotFound] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [addSlideOpen, setAddSlideOpen] = useState(false);
   const [publishNotice, setPublishNotice] = useState<string | null>(null);
 
   const quiz = useCreatorStore((s) => s.quiz);
@@ -194,7 +196,7 @@ export function CreatorPage() {
           activeSlideId={activeSlide.id}
           validationBySlideId={validation.bySlideId}
           onSelect={setActiveSlide}
-          onAddClick={() => addSlide('quiz')}
+          onAddClick={() => setAddSlideOpen(true)}
           onDuplicate={duplicateSlide}
           onDelete={deleteSlide}
           onReorder={reorderSlides}
@@ -240,6 +242,12 @@ export function CreatorPage() {
         themeId={quiz.themeId}
         slides={slides}
         initialIndex={activeSlideIndex}
+      />
+
+      <AddSlideModal
+        open={addSlideOpen}
+        onOpenChange={setAddSlideOpen}
+        onSelectType={(slideType) => addSlide(slideType)}
       />
     </div>
   );

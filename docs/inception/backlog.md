@@ -46,11 +46,11 @@
   - [x] **Task #14:** `feat(u2): add Zod inline slide validation, purple tooltip callouts, and invalid "!" badges`
   - [x] **Task #15:** `feat(u2): implement Supabase Storage question image upload, ~8 Eroot themes, and Creator Preview mode`
 
-#### Epic #16 — `[U3] Question Types R1` (`type:epic`, `unit:U3`, `priority:p0`)
-- **Story #17:** `As a creator, I can author Quiz (2-6 options), True or False, Poll, and Classic slides` (`US-004`, `unit:U3`, `area:creator`)
-  - **Task #18:** `feat(u3): define shared Zod schemas & answer sanitizers for Quiz, True/False, Poll, and Classic`
-  - **Task #19:** `feat(u3): build Add-slide modal (Add tab groups) and type-switching logic preserving compatible fields`
-  - **Task #20:** `feat(u3): implement Quiz (up to 6 tiles, multi-correct), True/False, Poll, and Classic editors & preview renderers`
+#### Epic #16 — `[U3] Question Types R1` (`type:epic`, `unit:U3`, `priority:p0`) — **DONE**
+- [x] **Story #17:** `As a creator, I can author Quiz (2-6 options), True or False, Poll, and Classic slides` (`US-004`, `unit:U3`, `area:creator`)
+  - [x] **Task #18:** `feat(u3): define shared Zod schemas & answer sanitizers for Quiz, True/False, Poll, and Classic`
+  - [x] **Task #19:** `feat(u3): build Add-slide modal (Add tab groups) and type-switching logic preserving compatible fields`
+  - [x] **Task #20:** `feat(u3): implement Quiz (up to 6 tiles, multi-correct), True/False, Poll, and Classic editors & preview renderers`
 
 #### Epic #21 — `[U4] Live Game Engine` (`type:epic`, `unit:U4`, `priority:p0`)
 - **Story #22:** `As a host, I can launch a game with options, PIN/QR lobby, immutable snapshot, and kick control` (`US-005`, `unit:U4`, `area:host`)

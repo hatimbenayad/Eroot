@@ -296,19 +296,32 @@ export function SlideCanvas({
                         </button>
                       )}
 
-                      {slide.type === 'quiz' && idx >= 4 && (
+                      {((slide.type === 'quiz' && options.length > 2) ||
+                        (slide.type === 'poll' && options.length > 2)) && (
                         <button
                           type="button"
                           aria-label={`Remove answer ${idx + 1}`}
                           onClick={() =>
-                            onUpdateSlide((s) => ({
-                              ...s,
-                              content: {
-                                options: (s.content as QuizContent).options.filter(
-                                  (_, i) => i !== idx
-                                ),
-                              },
-                            }))
+                            onUpdateSlide((s) => {
+                              if (s.type === 'poll') {
+                                return {
+                                  ...s,
+                                  content: {
+                                    options: (s.content as PollContent).options.filter(
+                                      (_, i) => i !== idx
+                                    ),
+                                  },
+                                };
+                              }
+                              return {
+                                ...s,
+                                content: {
+                                  options: (s.content as QuizContent).options.filter(
+                                    (_, i) => i !== idx
+                                  ),
+                                },
+                              };
+                            })
                           }
                           className="rounded-md p-1.5 bg-black/20 text-white hover:bg-black/35"
                         >
@@ -329,22 +342,36 @@ export function SlideCanvas({
               </div>
             )}
 
-            {slide.type === 'quiz' && options.length < 6 && (
+            {((slide.type === 'quiz' && options.length < 6) ||
+              (slide.type === 'poll' && options.length < 4)) && (
               <div className="flex justify-center pt-1">
                 <Button
                   type="button"
                   variant="secondary"
                   size="sm"
                   onClick={() =>
-                    onUpdateSlide((s) => ({
-                      ...s,
-                      content: {
-                        options: [
-                          ...(s.content as QuizContent).options,
-                          { id: createSlideId(), text: '', isCorrect: false },
-                        ],
-                      },
-                    }))
+                    onUpdateSlide((s) => {
+                      if (s.type === 'poll') {
+                        return {
+                          ...s,
+                          content: {
+                            options: [
+                              ...(s.content as PollContent).options,
+                              { id: createSlideId(), text: '' },
+                            ],
+                          },
+                        };
+                      }
+                      return {
+                        ...s,
+                        content: {
+                          options: [
+                            ...(s.content as QuizContent).options,
+                            { id: createSlideId(), text: '', isCorrect: false },
+                          ],
+                        },
+                      };
+                    })
                   }
                 >
                   <Plus className="h-4 w-4" aria-hidden="true" />
