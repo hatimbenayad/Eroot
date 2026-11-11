@@ -83,11 +83,11 @@
   - [x] **Task #43:** `feat(u6): implement .xlsx and .csv report export with formula-injection escaping`
   - [x] **Task #44:** `feat(u6): implement Play Again and non-AI difficult-questions (>=3) quiz generator`
 
-#### Epic #45 — `[U7] Library, Discover, Templates & Import` (`type:epic`, `unit:U7`, `priority:p1`)
-- **Story #46:** `As a creator, I can organize Library folders, discover/clone quizzes, use 5 templates, Find questions, and import spreadsheets` (`US-009`, `unit:U7`, `area:creator`)
-  - **Task #47:** `feat(u7): build My Library (drafts, published, favourites, folders, duplicate, visibility/share)`
-  - **Task #48:** `feat(u7): build Discover page (search/filter public quizzes, host or copy to library) and 5 starter templates`
-  - **Task #49:** `feat(u7): build Creator Find tab (question bank search) and Import tab (.xlsx/.csv parser + downloadable template)`
+#### Epic #45 — `[U7] Library, Discover, Templates & Import` (`type:epic`, `unit:U7`, `priority:p1`) — **DONE**
+- [x] **Story #46:** `As a creator, I can organize Library folders, discover/clone quizzes, use 5 templates, Find questions, and import spreadsheets` (`US-009`, `unit:U7`, `area:creator`)
+  - [x] **Task #47:** `feat(u7): build My Library (drafts, published, favourites, folders, duplicate, visibility/share)`
+  - [x] **Task #48:** `feat(u7): build Discover page (search/filter public quizzes, host or copy to library) and 5 starter templates`
+  - [x] **Task #49:** `feat(u7): build Creator Find tab (question bank search) and Import tab (.xlsx/.csv parser + downloadable template)`
 
 ---
 

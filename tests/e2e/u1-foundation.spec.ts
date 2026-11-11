@@ -31,10 +31,10 @@ test.describe('U1 Foundation, Auth & Accessibility', () => {
     await expect(page.getByText('Password must be at least 8 characters.')).toBeVisible();
   });
 
-  test('landing, auth, and join pages have zero critical/serious axe violations', async ({
+  test('landing, auth, join, and discover pages have zero critical/serious axe violations', async ({
     page,
   }) => {
-    for (const path of ['/', '/auth', '/join']) {
+    for (const path of ['/', '/auth', '/join', '/discover']) {
       await page.goto(path);
       const results = await new AxeBuilder({ page }).analyze();
       const severe = results.violations.filter(

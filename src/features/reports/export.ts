@@ -167,3 +167,4 @@ export async function downloadReportXlsx(title: string, analytics: ReportAnalyti
   });
   triggerBrowserDownload(blob, `${safeSlug(title)}.xlsx`);
 }
+

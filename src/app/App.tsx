@@ -8,7 +8,9 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { AuthPage } from '@/features/auth/AuthPage';
 import { AuthProvider } from '@/features/auth/AuthProvider';
 import { RequireAuth } from '@/features/auth/RequireAuth';
+import { useAuth } from '@/features/auth/useAuth';
 import { CreatorPage } from '@/features/creator/CreatorPage';
+import { DiscoverPage } from '@/features/discover/DiscoverPage';
 import { HostGamePage } from '@/features/host/HostGamePage';
 import { LandingPage } from '@/features/landing/LandingPage';
 import { LibraryPage } from '@/features/library/LibraryPage';
@@ -17,6 +19,18 @@ import { PlayPage } from '@/features/player/PlayPage';
 import { ReportDetailPage } from '@/features/reports/ReportDetailPage';
 import { ReportsPage } from '@/features/reports/ReportsPage';
 import { I18nProvider } from '@/i18n/I18nProvider';
+
+function DiscoverRoute() {
+  const { user } = useAuth();
+  if (user) {
+    return (
+      <HostAppShell>
+        <DiscoverPage />
+      </HostAppShell>
+    );
+  }
+  return <DiscoverPage />;
+}
 
 function NotFoundPage() {
   return (
@@ -55,6 +69,7 @@ export function App() {
                   <Route path="/auth" element={<AuthPage />} />
                   <Route path="/join" element={<JoinPage />} />
                   <Route path="/play/:gameId" element={<PlayPage />} />
+                  <Route path="/discover" element={<DiscoverRoute />} />
 
                   <Route element={<RequireAuth />}>
                     <Route path="/creator/:quizId" element={<CreatorPage />} />

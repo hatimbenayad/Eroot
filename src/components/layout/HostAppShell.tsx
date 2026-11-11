@@ -1,12 +1,13 @@
+import type { ReactNode } from 'react';
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { BookOpen, BarChart3, LogOut } from 'lucide-react';
+import { BookOpen, BarChart3, Compass, LogOut } from 'lucide-react';
 import { ErootLogo } from '@/components/eroot/ErootLogo';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/features/auth/useAuth';
 import { useTranslation } from '@/i18n/useTranslation';
 import { cn } from '@/lib/cn';
 
-export function HostAppShell() {
+export function HostAppShell({ children }: { children?: ReactNode }) {
   const { user, signOut } = useAuth();
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -41,6 +42,20 @@ export function HostAppShell() {
                 {t('nav.library')}
               </NavLink>
               <NavLink
+                to="/discover"
+                className={({ isActive }) =>
+                  cn(
+                    'inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                    isActive
+                      ? 'bg-indigo-50 text-indigo-700'
+                      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                  )
+                }
+              >
+                <Compass className="h-4 w-4" aria-hidden="true" />
+                Discover
+              </NavLink>
+              <NavLink
                 to="/reports"
                 className={({ isActive }) =>
                   cn(
@@ -70,7 +85,7 @@ export function HostAppShell() {
       </header>
 
       <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6">
-        <Outlet />
+        {children ?? <Outlet />}
       </main>
     </div>
   );

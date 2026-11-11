@@ -40,6 +40,7 @@ export function CreatorPage() {
   const updateQuizMeta = useCreatorStore((s) => s.updateQuizMeta);
   const updateSlide = useCreatorStore((s) => s.updateSlide);
   const addSlide = useCreatorStore((s) => s.addSlide);
+  const appendSlides = useCreatorStore((s) => s.appendSlides);
   const duplicateSlide = useCreatorStore((s) => s.duplicateSlide);
   const deleteSlide = useCreatorStore((s) => s.deleteSlide);
   const reorderSlides = useCreatorStore((s) => s.reorderSlides);
@@ -260,7 +261,9 @@ export function CreatorPage() {
       <AddSlideModal
         open={addSlideOpen}
         onOpenChange={setAddSlideOpen}
+        quizId={quiz.id}
         onSelectType={(slideType) => addSlide(slideType)}
+        onInsertSlides={(incoming) => appendSlides(incoming)}
       />
 
       <GameOptionsModal

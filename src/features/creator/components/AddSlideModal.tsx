@@ -1,12 +1,16 @@
+import { useEffect, useRef, useState } from 'react';
 import {
   BarChart2,
   CheckSquare,
+  Download,
   FileText,
   HelpCircle,
   Image as ImageIcon,
   ListChecks,
   MessageSquare,
+  Plus,
   Quote,
+  Search,
   Sliders,
   Sparkles,
   Target,
@@ -15,6 +19,8 @@ import {
   Video,
 } from 'lucide-react';
 import type { ComponentType } from 'react';
+import { Alert } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -22,9 +28,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { searchQuestionBank, type QuestionBankHit } from '@/features/creator/api';
 import { cn } from '@/lib/cn';
-import type { SlideType } from '@shared/schemas/slide';
+import {
+  buildImportTemplateCsv,
+  parseCsvText,
+  parseImportedGrid,
+  TEMPLATE_SAMPLE_ROWS,
+  type ImportParseResult,
+} from '@shared/import/spreadsheet';
+import type { SlideDraft, SlideType } from '@shared/schemas/slide';
 
 interface SlideTypeCard {
   id: string;
@@ -36,158 +51,40 @@ interface SlideTypeCard {
 }
 
 const TEST_KNOWLEDGE_TYPES: SlideTypeCard[] = [
-  {
-    id: 'quiz',
-    label: 'Quiz',
-    description: '2–6 answer options (single or multi-select)',
-    icon: ListChecks,
-    slideType: 'quiz',
-  },
-  {
-    id: 'true_false',
-    label: 'True or false',
-    description: '2 fixed choices',
-    icon: CheckSquare,
-    slideType: 'true_false',
-  },
-  {
-    id: 'type_answer',
-    label: 'Type answer',
-    description: 'Short typed text match',
-    icon: Type,
-    slideType: 'type_answer',
-  },
-  {
-    id: 'slider',
-    label: 'Slider',
-    description: 'Numeric range estimate',
-    icon: Sliders,
-    slideType: 'slider',
-  },
-  {
-    id: 'puzzle',
-    label: 'Puzzle',
-    description: 'Order 4 items in sequence',
-    icon: HelpCircle,
-    slideType: 'puzzle',
-  },
-  {
-    id: 'pin_answer',
-    label: 'Pin answer',
-    description: 'Drop pin on target region',
-    icon: Target,
-    releaseBadge: 'R3',
-  },
+  { id: 'quiz', label: 'Quiz', description: '2–6 answer options (single or multi-select)', icon: ListChecks, slideType: 'quiz' },
+  { id: 'true_false', label: 'True or false', description: '2 fixed choices', icon: CheckSquare, slideType: 'true_false' },
+  { id: 'type_answer', label: 'Type answer', description: 'Short typed text match', icon: Type, slideType: 'type_answer' },
+  { id: 'slider', label: 'Slider', description: 'Numeric range estimate', icon: Sliders, slideType: 'slider' },
+  { id: 'puzzle', label: 'Puzzle', description: 'Order 4 items in sequence', icon: HelpCircle, slideType: 'puzzle' },
+  { id: 'pin_answer', label: 'Pin answer', description: 'Drop pin on target region', icon: Target, releaseBadge: 'R3' },
 ];
 
 const COLLECT_OPINIONS_TYPES: SlideTypeCard[] = [
-  {
-    id: 'poll',
-    label: 'Poll',
-    description: '2–4 options, no right answer',
-    icon: BarChart2,
-    slideType: 'poll',
-  },
-  {
-    id: 'scale',
-    label: 'Scale',
-    description: '1–5 rating scale',
-    icon: Sliders,
-    slideType: 'scale',
-  },
-  {
-    id: 'nps_scale',
-    label: 'NPS scale',
-    description: '0–10 net promoter score',
-    icon: BarChart2,
-    slideType: 'nps_scale',
-  },
-  {
-    id: 'word_cloud',
-    label: 'Word cloud',
-    description: 'Short phrases word cloud',
-    icon: Sparkles,
-    slideType: 'word_cloud',
-  },
-  {
-    id: 'open_ended',
-    label: 'Open-ended',
-    description: 'Free text up to 250 chars',
-    icon: MessageSquare,
-    slideType: 'open_ended',
-  },
-  {
-    id: 'drop_pin',
-    label: 'Drop pin',
-    description: 'Image pin heatmap',
-    icon: Target,
-    releaseBadge: 'R3',
-  },
-  {
-    id: 'brainstorm',
-    label: 'Brainstorm',
-    description: 'Submit & upvote ideas',
-    icon: MessageSquare,
-    releaseBadge: 'R3',
-  },
+  { id: 'poll', label: 'Poll', description: '2–4 options, no right answer', icon: BarChart2, slideType: 'poll' },
+  { id: 'scale', label: 'Scale', description: '1–5 rating scale', icon: Sliders, slideType: 'scale' },
+  { id: 'nps_scale', label: 'NPS scale', description: '0–10 net promoter score', icon: BarChart2, slideType: 'nps_scale' },
+  { id: 'word_cloud', label: 'Word cloud', description: 'Short phrases word cloud', icon: Sparkles, slideType: 'word_cloud' },
+  { id: 'open_ended', label: 'Open-ended', description: 'Free text up to 250 chars', icon: MessageSquare, slideType: 'open_ended' },
+  { id: 'drop_pin', label: 'Drop pin', description: 'Image pin heatmap', icon: Target, releaseBadge: 'R3' },
+  { id: 'brainstorm', label: 'Brainstorm', description: 'Submit & upvote ideas', icon: MessageSquare, releaseBadge: 'R3' },
 ];
 
 const MEDIA_SLIDE_TYPES: SlideTypeCard[] = [
-  {
-    id: 'classic',
-    label: 'Classic',
-    description: 'Heading, body text & image',
-    icon: FileText,
-    slideType: 'classic',
-  },
-  {
-    id: 'big_title',
-    label: 'Big title',
-    description: 'Section title card',
-    icon: Type,
-    slideType: 'big_title',
-  },
-  {
-    id: 'title_text',
-    label: 'Title and text',
-    description: 'Structured explanation',
-    icon: FileText,
-    slideType: 'title_text',
-  },
-  {
-    id: 'bullet_points',
-    label: 'Bullet points',
-    description: 'Key takeaways list',
-    icon: ListChecks,
-    slideType: 'bullet_points',
-  },
-  {
-    id: 'quote',
-    label: 'Quote',
-    description: 'Featured quote & author',
-    icon: Quote,
-    slideType: 'quote',
-  },
-  {
-    id: 'big_media',
-    label: 'Big media',
-    description: 'Full-canvas visual',
-    icon: ImageIcon,
-    slideType: 'big_media',
-  },
-  {
-    id: 'video',
-    label: 'Video',
-    description: 'YouTube or Vimeo embed',
-    icon: Video,
-    slideType: 'video',
-  },
+  { id: 'classic', label: 'Classic', description: 'Heading, body text & image', icon: FileText, slideType: 'classic' },
+  { id: 'big_title', label: 'Big title', description: 'Section title card', icon: Type, slideType: 'big_title' },
+  { id: 'title_text', label: 'Title and text', description: 'Structured explanation', icon: FileText, slideType: 'title_text' },
+  { id: 'bullet_points', label: 'Bullet points', description: 'Key takeaways list', icon: ListChecks, slideType: 'bullet_points' },
+  { id: 'quote', label: 'Quote', description: 'Featured quote & author', icon: Quote, slideType: 'quote' },
+  { id: 'big_media', label: 'Big media', description: 'Full-canvas visual', icon: ImageIcon, slideType: 'big_media' },
+  { id: 'video', label: 'Video', description: 'YouTube or Vimeo embed', icon: Video, slideType: 'video' },
 ];
 
 interface AddSlideModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  quizId?: string;
   onSelectType: (type: SlideType) => void;
+  onInsertSlides?: (slides: SlideDraft[]) => void;
 }
 
 function SlideTypeGroup({
@@ -246,10 +143,123 @@ function SlideTypeGroup({
   );
 }
 
-export function AddSlideModal({ open, onOpenChange, onSelectType }: AddSlideModalProps) {
+export function AddSlideModal({
+  open,
+  onOpenChange,
+  quizId = 'draft',
+  onSelectType,
+  onInsertSlides,
+}: AddSlideModalProps) {
+  const [bankQuery, setBankQuery] = useState('');
+  const [bankHits, setBankHits] = useState<QuestionBankHit[]>([]);
+  const [searchingBank, setSearchingBank] = useState(false);
+
+  const importInputRef = useRef<HTMLInputElement | null>(null);
+  const [importPreview, setImportPreview] = useState<ImportParseResult | null>(null);
+  const [importError, setImportError] = useState<string | null>(null);
+  const [parsingImport, setParsingImport] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    let active = true;
+    setSearchingBank(true);
+    const timer = window.setTimeout(() => {
+      searchQuestionBank(bankQuery)
+        .then((hits) => {
+          if (active) setBankHits(hits);
+        })
+        .catch(() => {
+          if (active) setBankHits([]);
+        })
+        .finally(() => {
+          if (active) setSearchingBank(false);
+        });
+    }, 200);
+    return () => {
+      active = false;
+      window.clearTimeout(timer);
+    };
+  }, [open, bankQuery]);
+
   function handlePick(type: SlideType) {
     onSelectType(type);
     onOpenChange(false);
+  }
+
+  function handleDownloadCsvTemplate() {
+    const csv = buildImportTemplateCsv();
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'eroot-import-template.csv';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  async function handleDownloadXlsxTemplate() {
+    const ExcelJS = await import('exceljs');
+    const wb = new ExcelJS.Workbook();
+    const sheet = wb.addWorksheet('Questions');
+    for (const row of TEMPLATE_SAMPLE_ROWS) {
+      sheet.addRow(row);
+    }
+    const buf = await wb.xlsx.writeBuffer();
+    const blob = new Blob([buf], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'eroot-import-template.xlsx';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  async function handleFileSelected(file: File | undefined) {
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      setImportError('Spreadsheet file must be 2 MB or smaller.');
+      return;
+    }
+    setImportError(null);
+    setParsingImport(true);
+    try {
+      let grid: string[][] = [];
+      if (file.name.toLowerCase().endsWith('.csv')) {
+        const text = await file.text();
+        grid = parseCsvText(text);
+      } else if (file.name.toLowerCase().endsWith('.xlsx')) {
+        const ExcelJS = await import('exceljs');
+        const wb = new ExcelJS.Workbook();
+        await wb.xlsx.load(await file.arrayBuffer());
+        const sheet = wb.worksheets[0];
+        if (sheet) {
+          sheet.eachRow((row) => {
+            const values = (row.values as unknown[]).slice(1).map((v) =>
+              v === null || v === undefined ? '' : String(v).trim()
+            );
+            if (values.some(Boolean)) {
+              grid.push(values);
+            }
+          });
+        }
+      } else {
+        setImportError('Please upload a .xlsx or .csv spreadsheet.');
+        setParsingImport(false);
+        return;
+      }
+
+      setImportPreview(parseImportedGrid(quizId, grid));
+    } catch {
+      setImportError('Could not read spreadsheet. Check the template format.');
+    } finally {
+      setParsingImport(false);
+    }
   }
 
   return (
@@ -270,38 +280,143 @@ export function AddSlideModal({ open, onOpenChange, onSelectType }: AddSlideModa
           </TabsList>
 
           <TabsContent value="add" className="space-y-5 pt-2">
-            <SlideTypeGroup
-              title="Test knowledge"
-              items={TEST_KNOWLEDGE_TYPES}
-              onSelectType={handlePick}
-            />
-            <SlideTypeGroup
-              title="Collect opinions"
-              items={COLLECT_OPINIONS_TYPES}
-              onSelectType={handlePick}
-            />
-            <SlideTypeGroup
-              title="Media slides"
-              items={MEDIA_SLIDE_TYPES}
-              onSelectType={handlePick}
-            />
+            <SlideTypeGroup title="Test knowledge" items={TEST_KNOWLEDGE_TYPES} onSelectType={handlePick} />
+            <SlideTypeGroup title="Collect opinions" items={COLLECT_OPINIONS_TYPES} onSelectType={handlePick} />
+            <SlideTypeGroup title="Media slides" items={MEDIA_SLIDE_TYPES} onSelectType={handlePick} />
           </TabsContent>
 
-          <TabsContent value="find" className="py-8 text-center">
-            <p className="text-sm font-semibold text-slate-800">Question bank search (Unit U7)</p>
-            <p className="mt-1 text-xs text-slate-600">
-              Search and insert questions from public Eroot quizzes in Unit U7.
-            </p>
+          <TabsContent value="find" className="space-y-4 pt-2">
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-slate-400" />
+              <Input
+                aria-label="Search question bank"
+                placeholder="Search public quizzes & templates by keyword..."
+                value={bankQuery}
+                onChange={(e) => setBankQuery(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+
+            <div className="max-h-80 space-y-2 overflow-y-auto pr-1">
+              {searchingBank ? (
+                <p className="py-6 text-center text-sm text-slate-500">Searching questions...</p>
+              ) : bankHits.length === 0 ? (
+                <p className="py-6 text-center text-sm text-slate-500">
+                  No matching questions found.
+                </p>
+              ) : (
+                bankHits.map((hit, idx) => (
+                  <div
+                    key={`${hit.slide.id}-${idx}`}
+                    className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white p-3"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold text-slate-900">
+                        {hit.slide.title}
+                      </p>
+                      <p className="text-xs text-slate-500">
+                        {hit.slide.type} · {hit.sourceTitle}
+                      </p>
+                    </div>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        onInsertSlides?.([hit.slide]);
+                        onOpenChange(false);
+                      }}
+                    >
+                      <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+                      Insert
+                    </Button>
+                  </div>
+                ))
+              )}
+            </div>
           </TabsContent>
 
-          <TabsContent value="import" className="py-8 text-center">
-            <UploadCloud className="mx-auto mb-2 h-8 w-8 text-slate-400" aria-hidden="true" />
-            <p className="text-sm font-semibold text-slate-800">
-              Spreadsheet import (.xlsx / .csv) (Unit U7)
-            </p>
-            <p className="mt-1 text-xs text-slate-600">
-              Downloadable template and bulk question importer arrive in Unit U7.
-            </p>
+          <TabsContent value="import" className="space-y-4 pt-2">
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <div>
+                <p className="text-sm font-bold text-slate-900">1. Download template</p>
+                <p className="text-xs text-slate-600">
+                  Supports Quiz, True or false, and Poll rows (up to 100 questions).
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button type="button" size="sm" variant="outline" onClick={handleDownloadCsvTemplate}>
+                  <Download className="h-3.5 w-3.5" aria-hidden="true" />
+                  .CSV Template
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => void handleDownloadXlsxTemplate()}
+                >
+                  <Download className="h-3.5 w-3.5" aria-hidden="true" />
+                  .XLSX Template
+                </Button>
+              </div>
+            </div>
+
+            <div className="rounded-xl border-2 border-dashed border-slate-300 p-6 text-center space-y-3">
+              <UploadCloud className="mx-auto h-8 w-8 text-indigo-500" aria-hidden="true" />
+              <p className="text-sm font-semibold text-slate-900">
+                2. Upload completed .xlsx or .csv file
+              </p>
+              <input
+                ref={importInputRef}
+                type="file"
+                accept=".csv,.xlsx"
+                className="sr-only"
+                onChange={(e) => void handleFileSelected(e.target.files?.[0])}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                loading={parsingImport}
+                onClick={() => importInputRef.current?.click()}
+              >
+                Choose spreadsheet
+              </Button>
+            </div>
+
+            {importError && <Alert variant="error">{importError}</Alert>}
+
+            {importPreview && (
+              <div className="space-y-3 rounded-xl border border-slate-200 p-4">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-bold text-slate-900">
+                    {importPreview.validSlides.length} valid question(s) ready to import
+                  </p>
+                  <Button
+                    type="button"
+                    size="sm"
+                    disabled={importPreview.validSlides.length === 0}
+                    onClick={() => {
+                      onInsertSlides?.(importPreview.validSlides);
+                      setImportPreview(null);
+                      onOpenChange(false);
+                    }}
+                  >
+                    Import {importPreview.validSlides.length} questions
+                  </Button>
+                </div>
+
+                {importPreview.errors.length > 0 && (
+                  <div className="space-y-1 text-xs text-red-700">
+                    {importPreview.errors.map((err, i) => (
+                      <p key={i}>
+                        Row {err.rowNumber}: {err.message}
+                      </p>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </DialogContent>

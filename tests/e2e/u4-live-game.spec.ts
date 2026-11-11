@@ -63,6 +63,10 @@ function createMockHub() {
         });
         return;
       }
+      if (url.pathname.startsWith('/rest/v1/folders')) {
+        await route.fulfill({ status: 200, contentType: 'application/json', body: '[]' });
+        return;
+      }
       if (url.pathname.startsWith('/rest/v1/quizzes')) {
         await route.fulfill({
           status: 200,

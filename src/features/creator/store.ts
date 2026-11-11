@@ -69,6 +69,7 @@ interface CreatorState {
   updateQuizMeta: (patch: Partial<QuizDraft>) => void;
   updateSlide: (slideId: string, updater: (slide: SlideDraft) => SlideDraft) => void;
   addSlide: (type?: SlideType) => void;
+  appendSlides: (newSlides: SlideDraft[]) => void;
   duplicateSlide: (slideId: string) => void;
   deleteSlide: (slideId: string) => void;
   reorderSlides: (activeId: string, overId: string) => void;
@@ -143,6 +144,27 @@ export const useCreatorStore = create<CreatorState>((set, get) => ({
     set({
       slides: nextSlides,
       activeSlideId: newSlide.id,
+      saveStatus: 'dirty',
+      saveError: null,
+      validation: recomputeValidation(nextSlides),
+    });
+  },
+
+  appendSlides: (incoming) => {
+    const { quiz, slides } = get();
+    if (!quiz || incoming.length === 0) return;
+
+    const cloned = incoming.map((s) => ({
+      ...s,
+      id: createSlideId(),
+      quizId: quiz.id,
+      content: structuredClone(s.content),
+    }));
+
+    const nextSlides = [...slides, ...cloned].map((s, idx) => ({ ...s, position: idx }));
+    set({
+      slides: nextSlides,
+      activeSlideId: cloned[0]?.id ?? get().activeSlideId,
       saveStatus: 'dirty',
       saveError: null,
       validation: recomputeValidation(nextSlides),
